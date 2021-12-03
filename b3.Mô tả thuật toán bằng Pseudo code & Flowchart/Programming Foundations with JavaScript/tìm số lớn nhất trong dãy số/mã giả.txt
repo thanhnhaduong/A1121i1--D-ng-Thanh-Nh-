@@ -1,0 +1,9 @@
+
+begin
+input A1...An
+Max = A1
+while Ai<An do
+{i=i+1
+if Max < Ai then MAx=Ai}
+output "s? l?n nhât":Max
+end

@@ -1,0 +1,13 @@
+
+begin
+
+input DIEM
+
+if diem=>75 then output:"lo?i A"
+else
+	if Diem >= 60 then output:"lo?i B"
+	else 
+		if Diem >= 45 then output:"lo?i C"
+		else
+		output:"lo?i D"
+End
