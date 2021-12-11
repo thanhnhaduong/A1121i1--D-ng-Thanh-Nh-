@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>[Bài tập] Tạo form lấy survey khách hàng</title>
+    <STYLE>
+        th {text-align: left;}
+        .radio_table {border:1px solid black}
+        .questions {font-weight: bold}
+        .background_table_row {background-color: #f4f4f4}
+        .background_table_firstrow {background-color: #cecece
+        }
+    </STYLE>
+</head>
+<body style="font-family: calibri light">
+<form name="survey_form" action="#" method="post">
+    <h1>Market Research Survey</h1>
+    <span>Please take a few moments to completee this satisfaction survey.</span>
+    <hr>
+    <label for="age" class="questions">What is your age range?</label><br>
+    <select name="age" id="age">
+        <option selected>18-24</option>
+        <option>25-31</option>
+    </select>
+    <br><br>
+    <label for="income" class="questions">What is your yearly income range?</label><br>
+    <select name="income" id="income">
+        <option selected>$0 - $25,000</option>
+        <option>$25,000 -  $50,000</option>
+    </select>
+    <br><br>
+    <label class="questions">Gender Identity</label><br>
+    <input name="gender" id="gender_male" type="radio"><label for="gender_male">Male</label><br>
+    <input name="gender" id="gender_female" type="radio"><label for="gender_female">Female</label><br>
+    <input name="gender" id="gender_nonbinary" type="radio"><label for="gender_nonbinary">Nonbinary</label><br>
+    <input name="gender" id="gender_other" type="radio"><label for="gender_other">Other</label><br>
+    <input name="other_explaination" type="text">
+    <br><br>
+    <label class="questions">Which of the following products have your purchased in the last 2 months.Please check all that apply.</label><br>
+    <input name="product" id="one" type="checkbox"><label for="one">Product 1</label><br>
+    <input name="product" id="two" type="checkbox"><label for="two">Product 2</label><br>
+    <input name="product" id="three" type="checkbox"><label for="three">Product 3</label>
+    <br><br>
+    <label class="questions">How often would you use our new product?</label><br>
+    <input name="offen" id="daily" type="radio"><label for="daily">Daily</label><br>
+    <input name="offen" id="weekly" type="radio"><label for="weekly">Weekly</label><br>
+    <input name="offen" id="monthly" type="radio"><label for="monthly">Monthly</label>
+    <br><br>
+    <label class="questions">What would you pay for the new product?</label><br>
+    <table>
+        <tr>
+            <td align="center"><span>$</span><input name="dollars" id="dollars" type="text" size="5" maxlength="5"><span>.</span></td>
+            <td align="center"><input name="cents" id="cents" type="text" size="4" maxlength="3"></td>
+        </tr>
+        <br>
+        <tr>
+            <td align="center"><label for="dollars">Dollars</label></td>
+            <td align="center"><label for="cents">Cents</label></td>
+        </tr>
+    </table>
+    <br><br>
+    <label class="questions">What features would you like to see in the new product.</label><br>
+    <textarea rows="5"></textarea>
+    <br><br>
+    <label>Please rate your levell of agreement with the following statements</label>
+    <table class="radio_table">
+        <tr class="background_table_firstrow">
+            <th></th>
+            <th>Strongly Disagree</th>
+            <th>Disagree</th>
+            <th>Agree</th>
+        </tr>
+        <tr>
+            <th>Our products are priced fairly.</th>
+            <td><input name="quest1" id="one1" type="radio"><label for="one1">1</label></td>
+            <td><input name="quest1" id="one2" type="radio"><label for="one2">2</label></td>
+            <td><input name="quest1" id="one3" type="radio"><label for="one3">3</label></td>
+        </tr>
+        <tr class="background_table_row">
+            <th>Our products are higt quality.</th>
+            <td><input name="quest1" id="two1" type="radio"><label for="two1">1</label></td>
+            <td><input name="quest1" id="two2" type="radio"><label for="two2">2</label></td>
+            <td><input name="quest1" id="two3" type="radio"><label for="two3">3</label></td>
+        </tr>
+        <tr>
+            <th>Your would recommend our product to a friend or cowoker.</th>
+            <td><input name="quest1" id="three1" type="radio"><label for="1">1</label></td>
+            <td><input name="quest1" id="three2" type="radio"><label for="2">1</label></td>
+            <td><input name="quest1" id="three3" type="radio"><label for="3">1</label></td>
+        </tr>
+    </table><br>
+    <input type="submit">
+
+
+
+</form>
+</body>
+</html> 
