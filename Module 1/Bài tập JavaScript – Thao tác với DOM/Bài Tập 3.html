@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bài 3</title>
+</head>
+<body>
+
+ <h1>Thêm Thẻ HTML</h1>
+<input type ='text' id='nhapnoidung' size="30"/>
+<button type="button" onclick=('themchu')>add</button> <br>
+<button type='button' id='inNoiDung' style="width: 30%;height: 30px"></button>
+
+<script>
+       function themchu() {
+        let vb = document.getElementById('nhapnoidung').value;
+        if (vb=='') {alert('bạn chưa nhập gì cả')}
+        else {
+        document.getElementById('inNoiDung').innerText = vb;}
+    }
+</script>
+ </body>
+</html>
+
