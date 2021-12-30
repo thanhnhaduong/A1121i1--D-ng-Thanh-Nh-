@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Điểm Trung Bình</title>
+</head>
+<body>
+<button onclick="nhapdiem();"> bam vao day de nhập điểm!</button>
+<button onclick="nhapDoC();"> bam vao day de nhập độ C!</button>
+<button onclick="dientichhinhtron();"> bam vao day de nhập bán kính hình tròn!</button>
+<button onclick="chuvihinhtron();"> bam vao day de nhập bán kính hình tròn!</button>
+<script>
+function nhapdiem() {
+    let diemtoan = prompt('nhập điểm toán?');
+    let diemly = prompt('nhập điểm lý?');
+    let diemhoa = prompt('nhập điểm hoa?');
+    let diemtrungbinh = (parseInt(diemtoan)+ parseInt(diemly) + parseInt(diemhoa))/3;
+   alert('điểm trung bình ='+ diemtrungbinh);
+}
+function nhapDoC() {
+    let DoC = prompt('nhập nhiệt độ C');
+    let DoF = 9*DoC/5 + 32;
+    alert('Độ F là' + DoF);
+}
+function dientichhinhtron() {
+    let BanKinh = prompt('nhập bán kính');
+    let dientich = BanKinh * BanKinh * 3.14;
+    alert('dien tích hình tròn là' + dientich);
+}
+ function chuvihinhtron() {
+    let BanKinh2 = prompt('nhập bán kính');
+    let chuvi = BanKinh2 * 2 * 3.14;
+    alert('chu vi là ' + chuvi)
+
+}
+</script>
+</body>
+</html>
