@@ -52,11 +52,11 @@
     let resultDislay = document.getElementById("result");
 ​
         function pressNumber(num) {
-            if (resultDislay === '') {
+            if (resultDislay === '')
                 resultDislay.innerHTML = num;
-            } else if (result === 0) {
+            else if (result === 0)
                 resultDislay.innerHTML += num;
-            } else {
+            else {
                 resultDislay.innerHTML = num;
                 result = 0;
             }

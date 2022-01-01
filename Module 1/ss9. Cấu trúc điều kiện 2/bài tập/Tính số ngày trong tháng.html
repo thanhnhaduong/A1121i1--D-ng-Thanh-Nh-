@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<button onclick="nhapDate();"> Mời bạn nhập tháng !</button>
+<div id='result' ></div>
+<script>
+
+    function nhapDate()
+    {
+        let inputMOnth = parseInt(prompt('tháng mấy'));
+        // if (inputMOnth == 1) document.write('thang 1'); else document.write('không có tháng này');
+       switch (inputMOnth) {
+           case 1:
+           case 3:
+           case 5:
+           case 7:
+           case 8:
+           case 10:
+           case 12:
+               document.getElementById('result').innerHTML = 'Tháng ' + inputMOnth + ' có 31 Ngày';
+               break;
+           case 4:
+           case 6:
+           case 9:
+           case 11:
+               document.getElementById('result').innerHTML = 'Tháng ' + inputMOnth + ' có 30 Ngày';
+               break;
+           case 2:
+               document.getElementById('result').innerHTML = 'Tháng ' + inputMOnth + ' có 28 hoặc 29 Ngày';
+        }
+
+    }
+</script>
+</body>
+</html>

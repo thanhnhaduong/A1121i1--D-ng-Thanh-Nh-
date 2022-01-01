@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h6>Phương trình bậc 2</h6>
+<button onclick="pTBac2();"> Bấm vào để Nhập A,B và C</button>
+<div id='result' ></div>
+
+<h6>Kiểm tra xem 3 số thực (a,b,c) nhập vào có phải là cạnh của một tam giác</h6>
+<button onclick="tamGiac();"> Bấm vào để Nhập A,B và C</button>
+<div id='result1' ></div>
+
+<h6>Tính giá điện</h6>
+<button onclick="giadien();"> nhập vào số chữ điện</button>
+<div id='result2' ></div>
+
+<h6>Tính lãi ngân hàng</h6>
+<button onclick="laiNH();"> Nhập thông tin</button>
+<div id='result3' ></div>
+
+<script>
+function pTBac2(){
+            let soA = prompt('nhập số A');
+            let soB = prompt('nhập số B');
+            let soC = prompt('nhập số C');
+            let delta = ((parseInt(soB)*parseInt(soB)) - (4*parseInt(soA)*parseInt(soC)));
+            let x1 = -soB + Math.sqrt(delta)/(2*soA);
+            let x2 = -soB - Math.sqrt(delta)/(2*soA);
+            console.log('delta' + delta)
+            console.log('x1 = ' + x1)
+            console.log('x2 = ' + x2)
+     if (delta < 0)
+     {document.getElementById('result').innerHTML = 'Phương trình vô nghiệm'}
+     else
+        if (delta === 0)
+        {document.getElementById('result').innerHTML = 'Phương trình có nghiệm kép: x1=x2 ='+ soB/(2*soA)}
+        else
+        {
+           document.getElementById('result').innerHTML = 'Phương trình có 2 nghiệm' + x1 +'và ' + x2}
+}
+function tamGiac() {
+    let canhA = parseInt(prompt('nhập số A'));
+    let canhB = parseInt(prompt('nhập số B'));
+    let canhC = parseInt(prompt('nhập số C'));
+    if ((canhA>0) && (canhB>0) && (canhC>0) && ((canhA + canhB) > canhC) && ((canhA + canhC) > canhB) && ((canhB + canhC) > canhA))
+    {document.getElementById('result1').innerHTML = 'đây là 3 cạnh tam giác '}
+    else {document.getElementById('result1').innerHTML = 'đây không phải là 3 cạnh tam giác '}
+}
+
+function giadien() {
+
+let chuDien= parseInt(prompt('nhập số điện tieu dùng'))
+    let bac1 = chuDien * 1678;
+    let bac2 = (chuDien-50)*1734 + 1678*50;
+    let bac3 = (chuDien-100)*2014 + 1678*50 + 1734*50;
+    let bac4 = (chuDien - 150)* 2536 + 1678*50 + 1734*50 + 2014*50;
+    if (chuDien <= 50)  {document.getElementById('result2').innerHTML = 'giá điện là'+bac1}
+    if (chuDien <= 100)  {document.getElementById('result2').innerHTML = 'giá điện là'+bac2}
+    if (chuDien <= 150)  {document.getElementById('result2').innerHTML = 'giá điện là'+bac3}
+    else {document.getElementById('result2').innerHTML = 'tổng tiền điện là: '+bac4}
+}
+function laiNH() {
+    let tienvay= parseInt(prompt('nhập số tiền vay'))
+    let thang = parseInt(prompt('nhập vào số tháng vay'));
+    let lai = parseInt(prompt('nhập lãi (%) trên năm')) ;
+    let laiSuat = lai/12/100;
+    let tragochangthang = tienvay/thang;
+    let tienlai = 0;
+    for (let i=1;i <= thang; i++ )
+    {
+      let gocconlai = tienvay - (i*tragochangthang);
+       let laithangnay = gocconlai * laiSuat;
+        tienlai = tienlai + laithangnay;
+    }
+    document.getElementById('result3').innerHTML = 'tổng tiền vay là : ' + eval(tienvay+tienlai)  ;
+}
+
+</script>
+</body>
+</html>

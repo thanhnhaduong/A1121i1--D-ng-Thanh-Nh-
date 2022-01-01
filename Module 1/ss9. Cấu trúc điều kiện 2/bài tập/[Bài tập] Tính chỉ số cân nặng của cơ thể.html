@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<button onclick="nhap();"> bam vao day de nhập cân nặng chiều cao!</button>
+<script>
+
+      function nhap()
+    {
+        let inputCN = prompt('nhập cân nặng = kg');
+        let inputCC = prompt('nhập chiều cao = m');
+        let bmi = inputCN/(inputCC*inputCC);
+        if (bmi < 18.5 ) {
+            alert('ròm quá');
+        } else {
+            if (bmi < 25 ) {alert('bình thường') }
+            else if (bmi < 30 ) {alert('hơi thừa 1 tí')}
+                else {alert('dư cân')}
+        }
+    }
+</script>
+</body>
+</html>
