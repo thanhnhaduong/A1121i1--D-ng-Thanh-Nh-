@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<button onclick="nhietdo();">nhập nhiệt độ</button>
+<div id='result1' ></div>
+<button onclick="dayFibo();">Bấm để hiển thị dãy Fibo</button>
+<div id='result2' ></div>
+<button onclick="tinhtong();">Tính tổng của 30 số chia hết cho 7 đầu tiên trong các số tự nhiên</button>
+<div id='result3' ></div>
+<button onclick="in1den100();">Bấm để hiển thị dãy FizzBuzz</button>
+<script>
+    function nhietdo() {
+    let temp = parseInt(prompt('nhập nhiệt độ'))
+    while (temp < 20 || temp > 100) {
+        if (temp<20) temp = prompt('nhiệt độ quá thấp, nhập lại nhiệt độ')
+        else temp = prompt('nhiệt độ quá cao, nhập lại nhiệt độ')
+    }
+        document.getElementById('result1').innerHTML = 'nhiệt độ là: ' + temp;
+}
+function dayFibo() {
+        let fibo=0;
+        let tam1 = 0;
+        let tam2 = 1;
+        for (let i=0;i<=20;i++)
+        {
+            document.getElementById('result2').innerHTML = fibo +','; // hỏi thầy cách làm dài ra
+            fibo = tam1 + tam2;
+            tam1 = tam2;
+            tam2 = fibo;
+        }
+}
+//bài 6
+    function tinhtong() {
+       let count=0;
+       let i = 0;
+       let tong = 0;
+       while (count<30)
+       {
+           if (i%7 === 0)
+           {
+           tong = tong + i;
+           count++;}
+           i++;
+       }
+        document.getElementById('result1').innerHTML = 'tổng là: ' + tong;
+    }
+    // bài 7
+    function in1den100() {
+        for (let i=1;i<=100;i++)
+        {
+            if (i%3===0 && i%5===0)
+            {document.write('FizzBuzz,')}
+             else if (i%5===0) document.write('Buzz,')
+              else if (i%3===0) document.write('Fizz,')
+               else document.write(i + ',')
+        }
+
+    }
+</script>
+</body>
+</html>
