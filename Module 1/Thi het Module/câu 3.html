@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8">
+    <style type="text/css">
+        .poin {
+            width: 70%;
+            margin: 0 auto;
+            border: solid 1px;
+            margin-top: 20px;
+        }
+        .poinding {
+            background-color: #4267b2;
+            color: white;
+            padding: 10px;
+        }
+        .pointer {
+            padding: 15px;
+        }
+        .pointer label{
+            font-weight: bold;
+        }
+        .first {
+            display: block;
+            margin-top: 15px;
+        }
+        .secon {
+            display: block;
+            width: 98%;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .table {
+            width: 100%;
+        }
+        .table tr {
+            border-bottom: solid 1px;
+        }
+    </style>
+</head>
+<body>
+<div class="poin">
+    <div class="poinding">
+        Nhập vào dữ liệu sách
+    </div>
+    <div class="pointer">
+        <form method="pas">
+            <div class="first">
+                <label>Tên Sách:</label>
+                <input type="number" name="index" id="index" value="" hidden="true">
+                <input class="secon" type="text" name="ten_Sach" id="product_name" placeholder="nhập vào tên sách">
+            </div>
+
+            <div class="first">
+                <label>Mã Sách:</label>
+                <input class="secon" type="text" id="ma_Sach" placeholder="nhập vào mã sách"></input>
+            </div>
+            <div class="first">
+                <label>Số lượng:</label>
+                <input class="secon" type="number" name="soLuong" id="so_Luong" placeholder="Enter soLuong" value="0" onkeyup="updateTotalsoLuong()">
+            </div>
+            <div class="first">
+                <label>Năm Xuất Bản:</label>
+                <input class="secon" type="text" name="year" id="year" placeholder="Enter year" value="" onkeyup="updateTotalsoLuong()">
+            </div>
+
+            <div class="first">
+                <button class="btn-one" type="button" onclick="addProduct()">Thêm Sách</button>
+                <button class="btn-two" type="reset">Reset</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="poin">
+    <div class="poinding">
+        Mục Lục
+    </div>
+    <div class="pointer">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Mã Số</th>
+                <th>Tên Sách</th>
+                <th>Năm Xuất Bản</th>
+                <th>Số Quyển</th>
+            </tr>
+            </thead>
+            <tbody id="result"></tbody>
+        </table>
+    </div>
+</div>
+<script>
+
+</script>
+</body>
+</html>

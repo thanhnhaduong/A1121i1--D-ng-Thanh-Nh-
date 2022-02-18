@@ -25,14 +25,18 @@ function dayFibo() {
         let fibo=0;
         let tam1 = 0;
         let tam2 = 1;
+        let chuoi='';
         for (let i=0;i<=20;i++)
         {
-            document.getElementById('result2').innerHTML = fibo +','; // hỏi thầy cách làm dài ra
+            //document.getElementById('result2').innerHTML = fibo +',';
             fibo = tam1 + tam2;
             tam1 = tam2;
             tam2 = fibo;
+            chuoi = chuoi + ", " +fibo;
         }
-}
+    document.getElementById('result2').innerHTML = chuoi;
+    }
+
 //bài 6
     function tinhtong() {
        let count=0;

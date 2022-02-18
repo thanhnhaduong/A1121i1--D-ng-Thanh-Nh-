@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Câu 2</title>
+</head>
+<body>
+<button onclick="soThanthiet();"> bắt đầu!</button>
+<script>
+    function soThanthiet() {
+        let soA = parseInt(prompt('nhập vào số A'));
+        let SoB = parseInt(prompt('nhập vào số B'));
+        let dem = 0;
+        let dem1 = 0;
+        for (let i = 0; i < soA; i++) {
+            if (soA % i === 0) {
+                dem = dem + i;
+            }
+        }
+        for (let i = 0; i < SoB; i++) {
+            if (SoB % i === 0) {
+                dem1 = dem1 + i;
+            }
+        }
+        if ((soA === dem1) && (SoB === dem)) {
+            alert('2 số này thân thiết TRUE')
+        } else {
+            alert('2 số không thân thiết FALSE')
+        }
+    }
+
+</script>
+</body>
+</html>
