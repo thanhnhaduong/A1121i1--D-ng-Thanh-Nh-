@@ -8,6 +8,7 @@ public class Khaibaobien {
         boolean b=true;
         char c='a';
         String s = "hà nội";
+        
         System.out.println("i = " + i);
         System.out.println("f = " + f);
         System.out.println("d = " + d);
