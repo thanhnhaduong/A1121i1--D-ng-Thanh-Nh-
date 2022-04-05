@@ -1,4 +1,4 @@
-package ss1_jvoverview.thuchanh;
+package ss13_Thuattoantimkiem.baitap;
 
 public class Khaibaobien {
     public static void main(String[] args) {
