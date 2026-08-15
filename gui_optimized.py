@@ -465,8 +465,8 @@ class ChessGUI:
                         break
 
                     moves.append(best_move)
-                    analysis_game.board.push_san(analysis_game.board.san(
-                        chess.Move.from_uci(best_move)))
+                    move = chess.Move.from_uci(best_move)
+                    analysis_game.board.push(move)
 
                 # Draw board
                 canvas.delete("all")
