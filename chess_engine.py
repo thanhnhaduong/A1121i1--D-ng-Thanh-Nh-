@@ -84,7 +84,8 @@ class ChessGame:
         if isinstance(eval_before, int) and isinstance(eval_after, int):
             change = eval_after - eval_before
 
-            if len(self.move_history) % 2 == 0:
+            # Flip perspective for Black's moves (opposite of before)
+            if len(self.move_history) % 2 != 0:
                 change = -change
 
             change_pawn = change / 100
