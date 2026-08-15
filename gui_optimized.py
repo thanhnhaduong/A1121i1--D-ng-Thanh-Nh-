@@ -459,6 +459,9 @@ class ChessGUI:
                     if analysis_game.board.is_game_over():
                         break
 
+                    # Update Stockfish position
+                    analysis_game.stockfish.set_fen_position(analysis_game.board.fen())
+
                     # Get best move
                     best_move = analysis_game.stockfish.get_best_move_time(2000)
                     if not best_move:
