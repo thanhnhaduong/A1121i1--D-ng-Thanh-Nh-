@@ -1,0 +1,206 @@
+#!/usr/bin/env python3
+"""
+♟ Chess Engine - Core logic with Stockfish
+"""
+
+import chess
+import chess.pgn
+from stockfish import Stockfish
+from enum import Enum
+from datetime import datetime
+
+class MoveEvaluation(Enum):
+    BLUNDER = ("💥 Blunder", "< -3.00", "Nước đi tàn tệ, mất lợi thế lớn")
+    MISTAKE = ("❌ Mistake", "-1.00 to -3.00", "Sai lầm đáng kể, mất lợi thế")
+    INACCURACY = ("⚠️ Inaccuracy", "-0.25 to -1.00", "Không chính xác, mất chút lợi thế")
+    GOOD = ("👍 Good", "-0.25 to +0.25", "Nước đi tốt, bình thường")
+    EXCELLENT = ("✓ Excellent", "+1.00 to +3.00", "Nước đi xuất sắc, tăng lợi thế")
+    BRILLIANT = ("✨ Brilliant", "> +3.00", "Nước đi tuyệt vời, chuyển bất lợi thành lợi")
+
+class ChessGame:
+    def __init__(self):
+        self.board = chess.Board()
+        self.move_history = []
+        self.evaluation_history = []
+        self.stockfish_available = False
+        self.stockfish = None
+        self.opening_name = None
+        self.game_pgn = chess.pgn.Game()
+        self.node = self.game_pgn
+
+        # Try multiple paths to find Stockfish
+        stockfish_paths = [
+            r"C:\Users\admin\Downloads\stockfish-windows-x86-64-avx2\stockfish\stockfish-windows-x86-64-avx2.exe",
+            r"C:\Program Files\Stockfish\stockfish.exe",
+            r"C:\Program Files (x86)\Stockfish\stockfish.exe",
+            "stockfish"
+        ]
+
+        for path in stockfish_paths:
+            try:
+                self.stockfish = Stockfish(path=path)
+                self.stockfish.set_skill_level(18)
+                self.stockfish_available = True
+                print(f"✅ Stockfish loaded from: {path}")
+                break
+            except Exception as e:
+                continue
+
+        if not self.stockfish_available:
+            print(f"⚠️ Stockfish not found. Tried paths: {stockfish_paths}")
+
+    def make_move(self, move_uci):
+        try:
+            move = chess.Move.from_uci(move_uci)
+            if move not in self.board.legal_moves:
+                return False
+
+            fen_before = self.board.fen()
+            eval_before = self.get_evaluation()
+
+            self.board.push(move)
+            self.move_history.append(move_uci)
+            self.node = self.node.add_variation(move)
+
+            eval_after = self.get_evaluation()
+            move_eval = self._evaluate_move(eval_before, eval_after)
+
+            self.evaluation_history.append({
+                'move': move_uci,
+                'evaluation': move_eval,
+                'eval_before': eval_before,
+                'eval_after': eval_after,
+                'fen_before': fen_before
+            })
+
+            return True
+        except:
+            return False
+
+    def _evaluate_move(self, eval_before, eval_after):
+        if eval_before is None or eval_after is None:
+            return MoveEvaluation.GOOD
+
+        if isinstance(eval_before, int) and isinstance(eval_after, int):
+            change = eval_after - eval_before
+
+            if len(self.move_history) % 2 == 0:
+                change = -change
+
+            change_pawn = change / 100
+
+            if change > 300:
+                return MoveEvaluation.BRILLIANT
+            elif change > 100:
+                return MoveEvaluation.EXCELLENT
+            elif change > 25:
+                return MoveEvaluation.GOOD
+            elif change > -25:
+                return MoveEvaluation.INACCURACY
+            elif change > -100:
+                return MoveEvaluation.MISTAKE
+            else:
+                return MoveEvaluation.BLUNDER
+
+        return MoveEvaluation.GOOD
+
+    def get_evaluation(self):
+        if not self.stockfish_available:
+            return None
+
+        try:
+            self.stockfish.set_fen_position(self.board.fen())
+            eval_value = self.stockfish.get_evaluation()
+
+            if eval_value['type'] == 'cp':
+                return eval_value['value']
+            elif eval_value['type'] == 'mate':
+                mate_in = eval_value['value']
+                return 10000 if mate_in > 0 else -10000
+
+            return None
+        except:
+            return None
+
+    def get_best_move(self, time_ms=1000):
+        if not self.stockfish_available:
+            return None
+
+        try:
+            self.stockfish.set_fen_position(self.board.fen())
+            best_move = self.stockfish.get_best_move_time(time_ms)
+            return best_move
+        except:
+            return None
+
+    def is_game_over(self):
+        return self.board.is_game_over()
+
+    def is_check(self):
+        return self.board.is_check()
+
+    def get_current_turn(self):
+        return 'white' if self.board.turn else 'black'
+
+    def undo_move(self):
+        if self.move_history:
+            self.board.pop()
+            self.move_history.pop()
+            self.evaluation_history.pop()
+            return True
+        return False
+
+    def get_pgn_string(self):
+        return str(self.game_pgn)
+
+    def analyze_position(self, depth=15):
+        if not self.stockfish_available:
+            return None
+
+        try:
+            self.stockfish.set_fen_position(self.board.fen())
+            self.stockfish.set_depth(depth)
+            info = self.stockfish.get_best_move()
+            return info
+        except:
+            return None
+
+class MultiEngineGame:
+    def __init__(self, engine1_skill=18, engine2_skill=15):
+        self.board = chess.Board()
+        self.stockfish1 = Stockfish()
+        self.stockfish2 = Stockfish()
+
+        self.stockfish1.set_skill_level(engine1_skill)
+        self.stockfish2.set_skill_level(engine2_skill)
+
+        self.moves = []
+
+    def play_full_game(self, max_moves=200):
+        for _ in range(max_moves):
+            if self.board.is_game_over():
+                break
+
+            if self.board.turn:
+                self.stockfish1.set_fen_position(self.board.fen())
+                best_move = self.stockfish1.get_best_move_time(1000)
+            else:
+                self.stockfish2.set_fen_position(self.board.fen())
+                best_move = self.stockfish2.get_best_move_time(1000)
+
+            if best_move:
+                move = chess.Move.from_uci(best_move)
+                self.board.push(move)
+                self.moves.append(best_move)
+
+        return self.moves
+
+    def get_result(self):
+        if self.board.is_checkmate():
+            return "Checkmate - " + ("Engine 1 wins" if not self.board.turn else "Engine 2 wins")
+        elif self.board.is_stalemate():
+            return "Draw - Stalemate"
+        elif self.board.is_insufficient_material():
+            return "Draw - Insufficient material"
+        else:
+            return "Game incomplete"
