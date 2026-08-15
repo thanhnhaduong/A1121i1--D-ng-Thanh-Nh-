@@ -418,51 +418,68 @@ class ChessGUI:
         ttk.Button(win, text="🎓 Bắt Đầu Học", command=show_lesson).pack(pady=10)
 
     def show_analysis(self):
-        """Chạy tiếp tục trò chơi bằng 2 bot Stockfish từ vị trí hiện tại"""
+        """Chạy tiếp tục trò chơi bằng 2 bot Stockfish từ vị trí hiện tại - Với animation"""
         if not self.game or not self.game.stockfish_available:
             messagebox.showwarning("Lỗi", "Stockfish không khả dụng")
             return
 
         # Tạo cửa sổ phân tích
         analysis_win = tk.Toplevel(self.root)
-        analysis_win.title("🔍 Phân Tích - Bot Tiếp Tục (Ít Nhất 3 Nước)")
-        analysis_win.geometry("700x600")
+        analysis_win.title("🎬 Phân Tích Video - Bot Tiếp Tục")
+        analysis_win.geometry("700x650")
 
-        # Status label
-        status_label = tk.Label(analysis_win, text="⏳ Đang phân tích...", bg='#2a2a2a',
-                               fg='#4a9eff', font=("Arial", 11, "bold"), padx=10, pady=10)
-        status_label.pack(fill=tk.X)
+        # Control frame
+        control_frame = tk.Frame(analysis_win, bg='#2a2a2a', height=50)
+        control_frame.pack(fill=tk.X, padx=10, pady=10)
+
+        status_label = tk.Label(control_frame, text="⏳ Đang tính toán...", bg='#2a2a2a',
+                               fg='#4a9eff', font=("Arial", 11, "bold"))
+        status_label.pack(side=tk.LEFT, padx=10)
 
         # Canvas for board
         canvas = tk.Canvas(analysis_win, width=480, height=480, bg='#f0d9b5',
                           highlightthickness=1, highlightbackground='#444')
-        canvas.pack(pady=10)
+        canvas.pack(pady=5)
 
-        # Moves display
-        moves_frame = tk.Frame(analysis_win, bg='#2a2a2a')
-        moves_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # Info label
+        info_label = tk.Label(analysis_win, text="Nước: ...", bg='#2a2a2a',
+                             fg='#ffaa00', font=("Arial", 10, "bold"), padx=10, pady=5)
+        info_label.pack(fill=tk.X)
 
-        moves_text = tk.Text(moves_frame, height=8, bg='#1a1a1a', fg='#ffffff',
-                            font=("Arial", 9), wrap=tk.WORD)
-        moves_text.pack(fill=tk.BOTH, expand=True)
+        def draw_board(board):
+            """Vẽ bàn cờ"""
+            canvas.delete("all")
+            for row in range(8):
+                for col in range(8):
+                    x1, y1 = col * 60, row * 60
+                    x2, y2 = x1 + 60, y1 + 60
+                    color = '#f0d9b5' if (row + col) % 2 == 0 else '#b58863'
+                    canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
 
-        # Analysis in background thread
+            for square in chess.SQUARES:
+                piece = board.piece_at(square)
+                if piece:
+                    row, col = square // 8, square % 8
+                    x = col * 60 + 30
+                    y = row * 60 + 30
+                    piece_color = '#ffffff' if piece.color else '#000000'
+                    canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
+                                     font=("Arial", 40, "bold"), fill=piece_color)
+            analysis_win.update()
+
+        # Animation in thread
         def run_analysis():
             try:
-                # Create continuation game from current position
+                # Create continuation game
                 analysis_game = ChessGame()
                 analysis_game.board = self.game.board.copy()
-                analysis_game.stockfish.set_fen_position(analysis_game.board.fen())
 
                 moves = []
-                for i in range(6):  # Ít nhất 3 nước cho mỗi bên (6 nước tổng)
+                for i in range(6):
                     if analysis_game.board.is_game_over():
                         break
 
-                    # Update Stockfish position
                     analysis_game.stockfish.set_fen_position(analysis_game.board.fen())
-
-                    # Get best move
                     best_move = analysis_game.stockfish.get_best_move_time(2000)
                     if not best_move:
                         break
@@ -471,61 +488,46 @@ class ChessGUI:
                     move = chess.Move.from_uci(best_move)
                     analysis_game.board.push(move)
 
-                # Draw board
-                canvas.delete("all")
-                for row in range(8):
-                    for col in range(8):
-                        x1, y1 = col * 60, row * 60
-                        x2, y2 = x1 + 60, y1 + 60
-                        color = '#f0d9b5' if (row + col) % 2 == 0 else '#b58863'
-                        canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
+                # Playback animation
+                status_label.config(text="▶️ Đang phát...")
+                playback_board = self.game.board.copy()
 
-                # Draw pieces
-                for square in chess.SQUARES:
-                    piece = analysis_game.board.piece_at(square)
-                    if piece:
-                        row, col = square // 8, square % 8
-                        x = col * 60 + 30
-                        y = row * 60 + 30
-                        piece_color = '#ffffff' if piece.color else '#000000'
-                        canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
-                                         font=("Arial", 40, "bold"), fill=piece_color)
-
-                # Display moves
-                moves_text.config(state=tk.NORMAL)
-                moves_text.delete(1.0, tk.END)
-                moves_text.insert(tk.END, "📋 Tiếp Tục (Bot Tốt Nhất):\n\n")
-
-                move_count = 0
                 for i, move_uci in enumerate(moves):
-                    side = "Trắng" if i % 2 == 0 else "Đen"
-                    moves_text.insert(tk.END, f"Nước {i+1} ({side}): {move_uci}\n")
-                    move_count = i + 1
+                    move = chess.Move.from_uci(move_uci)
+                    playback_board.push(move)
 
-                # Get final eval
+                    # Update display
+                    side = "Trắng ♔" if i % 2 == 0 else "Đen ♚"
+                    info_label.config(text=f"Nước {i+1} ({side}): {move_uci}")
+
+                    # Draw board
+                    draw_board(playback_board)
+
+                    # Wait 2 seconds between moves
+                    import time
+                    time.sleep(2)
+
+                # Final eval
                 final_eval = analysis_game.stockfish.get_evaluation()
+                eval_str = ""
                 if final_eval:
-                    eval_str = f"{final_eval['value']/100:.2f}"
-                    moves_text.insert(tk.END, f"\n📊 Đánh Giá Cuối: {eval_str}\n")
-                    if final_eval['value'] > 300:
-                        moves_text.insert(tk.END, "✅ Trắng Thắng Rõ")
-                    elif final_eval['value'] < -300:
-                        moves_text.insert(tk.END, "✅ Đen Thắng Rõ")
+                    eval_val = final_eval['value'] / 100
+                    eval_str = f"  |  📊 {eval_val:+.2f}"
+                    if eval_val > 3:
+                        eval_str += " (Trắng Thắng)"
+                    elif eval_val < -3:
+                        eval_str += " (Đen Thắng)"
                     else:
-                        moves_text.insert(tk.END, "⚖️ Bằng Nhau Hơn")
+                        eval_str += " (Bằng Nhau)"
 
-                moves_text.config(state=tk.DISABLED)
-
-                # Update status
-                status_label.config(text=f"✅ Hoàn Thành ({move_count} nước)")
+                info_label.config(text=f"✅ Xong! ({len(moves)} nước){eval_str}")
+                status_label.config(text="✅ Hoàn Thành")
 
             except Exception as e:
                 status_label.config(text=f"❌ Lỗi: {str(e)}")
-                moves_text.config(state=tk.NORMAL)
-                moves_text.insert(tk.END, f"Error: {str(e)}")
-                moves_text.config(state=tk.DISABLED)
+                info_label.config(text=str(e))
 
-        # Run analysis in thread
+        # Run in thread
         import threading
         thread = threading.Thread(target=run_analysis, daemon=True)
         thread.start()
