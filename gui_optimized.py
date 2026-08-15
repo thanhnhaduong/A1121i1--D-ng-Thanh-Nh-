@@ -88,9 +88,15 @@ class ChessGUI:
         tk.Label(bottom, text="📊 Đánh Giá Nước Đi", bg='#2a2a2a', fg='#4a9eff',
                 font=("Arial", 10, "bold")).pack(fill=tk.X, padx=10, pady=(5, 0))
 
-        self.eval_display = tk.Text(bottom, height=4, bg='#1a1a1a', fg='#ffffff',
+        # Info display
+        self.eval_display = tk.Text(bottom, height=3, bg='#1a1a1a', fg='#ffffff',
                                    font=("Arial", 9), wrap=tk.WORD)
         self.eval_display.pack(fill=tk.X, padx=10, pady=5)
+
+        # Analysis button
+        self.analysis_btn = ttk.Button(bottom, text="🔍 Xem Phân Tích (Bot Tiếp Tục)",
+                                       command=self.show_analysis, state=tk.DISABLED)
+        self.analysis_btn.pack(fill=tk.X, padx=10, pady=5)
 
     def create_right_panel(self, parent):
         # Game mode
@@ -411,6 +417,116 @@ class ChessGUI:
 
         ttk.Button(win, text="🎓 Bắt Đầu Học", command=show_lesson).pack(pady=10)
 
+    def show_analysis(self):
+        """Chạy tiếp tục trò chơi bằng 2 bot Stockfish từ vị trí hiện tại"""
+        if not self.game or not self.game.stockfish_available:
+            messagebox.showwarning("Lỗi", "Stockfish không khả dụng")
+            return
+
+        # Tạo cửa sổ phân tích
+        analysis_win = tk.Toplevel(self.root)
+        analysis_win.title("🔍 Phân Tích - Bot Tiếp Tục (Ít Nhất 3 Nước)")
+        analysis_win.geometry("700x600")
+
+        # Status label
+        status_label = tk.Label(analysis_win, text="⏳ Đang phân tích...", bg='#2a2a2a',
+                               fg='#4a9eff', font=("Arial", 11, "bold"), padx=10, pady=10)
+        status_label.pack(fill=tk.X)
+
+        # Canvas for board
+        canvas = tk.Canvas(analysis_win, width=480, height=480, bg='#f0d9b5',
+                          highlightthickness=1, highlightbackground='#444')
+        canvas.pack(pady=10)
+
+        # Moves display
+        moves_frame = tk.Frame(analysis_win, bg='#2a2a2a')
+        moves_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        moves_text = tk.Text(moves_frame, height=8, bg='#1a1a1a', fg='#ffffff',
+                            font=("Arial", 9), wrap=tk.WORD)
+        moves_text.pack(fill=tk.BOTH, expand=True)
+
+        # Analysis in background thread
+        def run_analysis():
+            try:
+                # Create continuation game from current position
+                analysis_game = ChessGame()
+                analysis_game.board = self.game.board.copy()
+                analysis_game.stockfish.set_fen_position(analysis_game.board.fen())
+
+                moves = []
+                for i in range(6):  # Ít nhất 3 nước cho mỗi bên (6 nước tổng)
+                    if analysis_game.board.is_game_over():
+                        break
+
+                    # Get best move
+                    best_move = analysis_game.stockfish.get_best_move_time(2000)
+                    if not best_move:
+                        break
+
+                    moves.append(best_move)
+                    analysis_game.board.push_san(analysis_game.board.san(
+                        chess.Move.from_uci(best_move)))
+
+                # Draw board
+                canvas.delete("all")
+                for row in range(8):
+                    for col in range(8):
+                        x1, y1 = col * 60, row * 60
+                        x2, y2 = x1 + 60, y1 + 60
+                        color = '#f0d9b5' if (row + col) % 2 == 0 else '#b58863'
+                        canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
+
+                # Draw pieces
+                for square in chess.SQUARES:
+                    piece = analysis_game.board.piece_at(square)
+                    if piece:
+                        row, col = square // 8, square % 8
+                        x = col * 60 + 30
+                        y = row * 60 + 30
+                        piece_color = '#ffffff' if piece.color else '#000000'
+                        canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
+                                         font=("Arial", 40, "bold"), fill=piece_color)
+
+                # Display moves
+                moves_text.config(state=tk.NORMAL)
+                moves_text.delete(1.0, tk.END)
+                moves_text.insert(tk.END, "📋 Tiếp Tục (Bot Tốt Nhất):\n\n")
+
+                move_count = 0
+                for i, move_uci in enumerate(moves):
+                    side = "Trắng" if i % 2 == 0 else "Đen"
+                    moves_text.insert(tk.END, f"Nước {i+1} ({side}): {move_uci}\n")
+                    move_count = i + 1
+
+                # Get final eval
+                final_eval = analysis_game.stockfish.get_evaluation()
+                if final_eval:
+                    eval_str = f"{final_eval['value']/100:.2f}"
+                    moves_text.insert(tk.END, f"\n📊 Đánh Giá Cuối: {eval_str}\n")
+                    if final_eval['value'] > 300:
+                        moves_text.insert(tk.END, "✅ Trắng Thắng Rõ")
+                    elif final_eval['value'] < -300:
+                        moves_text.insert(tk.END, "✅ Đen Thắng Rõ")
+                    else:
+                        moves_text.insert(tk.END, "⚖️ Bằng Nhau Hơn")
+
+                moves_text.config(state=tk.DISABLED)
+
+                # Update status
+                status_label.config(text=f"✅ Hoàn Thành ({move_count} nước)")
+
+            except Exception as e:
+                status_label.config(text=f"❌ Lỗi: {str(e)}")
+                moves_text.config(state=tk.NORMAL)
+                moves_text.insert(tk.END, f"Error: {str(e)}")
+                moves_text.config(state=tk.DISABLED)
+
+        # Run analysis in thread
+        import threading
+        thread = threading.Thread(target=run_analysis, daemon=True)
+        thread.start()
+
     def start_game(self, mode):
         self.game_mode = mode
         self.game = ChessGame()
@@ -461,7 +577,9 @@ class ChessGUI:
             self.eval_display.config(state=tk.NORMAL)
             self.eval_display.delete(1.0, tk.END)
 
+            has_last_move = False
             if self.game.evaluation_history:
+                has_last_move = True
                 last = self.game.evaluation_history[-1]
                 try:
                     # Try to unpack evaluation value
@@ -474,19 +592,25 @@ class ChessGUI:
                         desc = "Không có lý do"
 
                     msg = f"{eval_sym} Nước: {last['move']}\n"
-                    msg += f"Đánh giá: {eval_range}\n"
-                    msg += f"Lý do: {desc}"
+                    msg += f"Đánh giá: {eval_range}"
 
                     self.eval_display.insert(tk.END, msg)
                 except (ValueError, AttributeError, TypeError) as unpack_error:
                     print(f"Error unpacking evaluation: {unpack_error}")
                     self.eval_display.insert(tk.END, f"Nước: {last['move']}\nĐánh giá: N/A")
 
+            # Enable/disable analysis button
+            if has_last_move and self.game.stockfish_available:
+                self.analysis_btn.config(state=tk.NORMAL)
+            else:
+                self.analysis_btn.config(state=tk.DISABLED)
+
             self.eval_display.config(state=tk.DISABLED)
         except Exception as e:
             print(f"Error updating eval display: {e}")
             try:
                 self.eval_display.config(state=tk.DISABLED)
+                self.analysis_btn.config(state=tk.DISABLED)
             except:
                 pass
 
