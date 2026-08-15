@@ -428,8 +428,8 @@ class ChessGUI:
             pct = min(max((eval_val / 500), -1), 1)
             white_width = (width / 2) * (1 + pct)
 
-            self.eval_canvas.create_rectangle(0, 0, white_width, height, fill='#ffffff', outline='none')
-            self.eval_canvas.create_rectangle(white_width, 0, width, height, fill='#000000', outline='none')
+            self.eval_canvas.create_rectangle(0, 0, white_width, height, fill='#ffffff', outline='')
+            self.eval_canvas.create_rectangle(white_width, 0, width, height, fill='#000000', outline='')
             self.eval_canvas.create_line(width / 2, 0, width / 2, height, fill='#444444', width=2)
 
             eval_str = f"{eval_val/100:+.2f}"
