@@ -369,51 +369,75 @@ class ChessGUI:
         if not self.game:
             return
 
-        # Evaluation
-        eval_val = self.game.get_evaluation() or 0
-        self.draw_eval_bar(eval_val)
+        try:
+            # Evaluation - handle None case
+            eval_val = self.game.get_evaluation()
+            if eval_val is None:
+                eval_val = 0
+            self.draw_eval_bar(eval_val)
+        except Exception as e:
+            print(f"Error in draw_eval_bar: {e}")
+            self.draw_eval_bar(0)
 
-        # Status
-        turn = "Trắng ♔" if self.game.get_current_turn() == 'white' else "Đen ♚"
-        self.status_label.config(text=f"Lượt: {turn}")
+        try:
+            # Status
+            turn = "Trắng ♔" if self.game.get_current_turn() == 'white' else "Đen ♚"
+            self.status_label.config(text=f"Lượt: {turn}")
+        except Exception as e:
+            print(f"Error updating status: {e}")
 
-        # Opening
-        opening_name, _ = get_opening_by_moves(self.game.move_history)
-        self.opening_label.config(text=f"Khai cuộc: {opening_name or '-'}")
+        try:
+            # Opening
+            opening_name, _ = get_opening_by_moves(self.game.move_history)
+            self.opening_label.config(text=f"Khai cuộc: {opening_name or '-'}")
+        except Exception as e:
+            print(f"Error getting opening: {e}")
+            self.opening_label.config(text="Khai cuộc: -")
 
-        # Move evaluation display
-        self.eval_display.config(state=tk.NORMAL)
-        self.eval_display.delete(1.0, tk.END)
+        try:
+            # Move evaluation display
+            self.eval_display.config(state=tk.NORMAL)
+            self.eval_display.delete(1.0, tk.END)
 
-        if self.game.evaluation_history:
-            last = self.game.evaluation_history[-1]
-            eval_sym, eval_range, desc = last['evaluation'].value
+            if self.game.evaluation_history:
+                last = self.game.evaluation_history[-1]
+                eval_sym, eval_range, desc = last['evaluation'].value
 
-            msg = f"{eval_sym} Nước: {last['move']}\n"
-            msg += f"Đánh giá: {eval_range}\n"
-            msg += f"Lý do: {desc}"
+                msg = f"{eval_sym} Nước: {last['move']}\n"
+                msg += f"Đánh giá: {eval_range}\n"
+                msg += f"Lý do: {desc}"
 
-            self.eval_display.insert(tk.END, msg)
+                self.eval_display.insert(tk.END, msg)
 
-        self.eval_display.config(state=tk.DISABLED)
+            self.eval_display.config(state=tk.DISABLED)
+        except Exception as e:
+            print(f"Error updating eval display: {e}")
+            self.eval_display.config(state=tk.DISABLED)
 
     def draw_eval_bar(self, eval_val):
-        self.eval_canvas.delete("all")
+        try:
+            self.eval_canvas.delete("all")
 
-        width = 1200
-        height = 35
+            width = 1200
+            height = 35
 
-        pct = min(max((eval_val / 500), -1), 1)
-        white_width = (width / 2) * (1 + pct)
+            # Safely handle eval_val
+            if eval_val is None or not isinstance(eval_val, (int, float)):
+                eval_val = 0
 
-        self.eval_canvas.create_rectangle(0, 0, white_width, height, fill='#ffffff', outline='none')
-        self.eval_canvas.create_rectangle(white_width, 0, width, height, fill='#000000', outline='none')
-        self.eval_canvas.create_line(width / 2, 0, width / 2, height, fill='#444444', width=2)
+            pct = min(max((eval_val / 500), -1), 1)
+            white_width = (width / 2) * (1 + pct)
 
-        eval_str = f"{eval_val/100:+.2f}"
-        msg = "Bằng" if abs(eval_val) < 5 else ("Trắng thắng" if eval_val > 300 else "Đen thắng")
+            self.eval_canvas.create_rectangle(0, 0, white_width, height, fill='#ffffff', outline='none')
+            self.eval_canvas.create_rectangle(white_width, 0, width, height, fill='#000000', outline='none')
+            self.eval_canvas.create_line(width / 2, 0, width / 2, height, fill='#444444', width=2)
 
-        self.eval_label.config(text=f"Đánh giá: {eval_str} | {msg}")
+            eval_str = f"{eval_val/100:+.2f}"
+            msg = "Bằng" if abs(eval_val) < 5 else ("Trắng thắng" if eval_val > 300 else "Đen thắng")
+
+            self.eval_label.config(text=f"Đánh giá: {eval_str} | {msg}")
+        except Exception as e:
+            print(f"Error in draw_eval_bar: {e}")
 
     def undo_move(self):
         if self.game and self.game.move_history:
