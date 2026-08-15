@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import chess
 from chess_engine import ChessGame, MultiEngineGame, MoveEvaluation
-from openings_50 import get_opening_by_moves, get_all_openings
+from openings_50 import get_opening_by_moves, get_all_openings, get_teaching_data
 
 class ChessGUI:
     def __init__(self, root):
@@ -110,7 +110,10 @@ class ChessGUI:
         tk.Label(parent, text="📚 Khai Cuộc", bg='#2a2a2a', fg='#4a9eff',
                 font=("Arial", 10, "bold")).pack(fill=tk.X, padx=10, pady=(15, 5))
 
-        ttk.Button(parent, text="Xem 50+ Khai Cuộc", command=self.show_openings,
+        ttk.Button(parent, text="Xem 70+ Khai Cuộc", command=self.show_openings,
+                  width=30).pack(fill=tk.X, padx=10, pady=2)
+
+        ttk.Button(parent, text="📖 Học Khai Cuộc", command=self.show_teaching,
                   width=30).pack(fill=tk.X, padx=10, pady=2)
 
         self.opening_label = tk.Label(parent, text="Khai cuộc: -", bg='#2a2a2a',
@@ -349,6 +352,65 @@ class ChessGUI:
 
         ttk.Button(win, text="Xem Chi Tiết", command=show_detail).pack(pady=10)
 
+    def show_teaching(self):
+        """Hiển thị chế độ dạy khai cuộc"""
+        openings = get_all_openings()
+
+        win = tk.Toplevel(self.root)
+        win.title("📖 Học Khai Cuộc")
+        win.geometry("700x550")
+
+        frame = tk.Frame(win)
+        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        scroll = ttk.Scrollbar(frame)
+        scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        listbox = tk.Listbox(frame, font=("Arial", 10), yscrollcommand=scroll.set,
+                            bg='#2a2a2a', fg='#ffffff', height=20)
+        listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scroll.config(command=listbox.yview)
+
+        for name in openings.keys():
+            listbox.insert(tk.END, name)
+
+        def show_lesson():
+            if not listbox.curselection():
+                messagebox.showwarning("Chọn Khai Cuộc", "Vui lòng chọn một khai cuộc")
+                return
+
+            name = listbox.get(listbox.curselection()[0])
+            teaching_data = get_teaching_data(name)
+
+            lesson = tk.Toplevel(win)
+            lesson.title(f"Học: {name}")
+            lesson.geometry("700x600")
+
+            # Title
+            title = tk.Label(lesson, text=f"📖 {name}", bg='#2a2a2a', fg='#4a9eff',
+                            font=("Arial", 14, "bold"), padx=10, pady=10)
+            title.pack(fill=tk.X)
+
+            # Teaching steps
+            if teaching_data:
+                steps_text = tk.Text(lesson, font=("Arial", 11), wrap=tk.WORD,
+                                    bg='#1a1a1a', fg='#ffffff', height=15)
+                steps_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+                steps_text.insert(tk.END, "🎯 Các Bước Học:\n\n")
+                for i, (move, explanation) in enumerate(teaching_data.get("steps", []), 1):
+                    steps_text.insert(tk.END, f"Bước {i}: {move}\n")
+                    steps_text.insert(tk.END, f"{explanation}\n\n")
+
+                steps_text.insert(tk.END, f"\n📝 Tóm Tắt:\n{teaching_data.get('summary', '')}\n")
+                steps_text.config(state=tk.DISABLED)
+            else:
+                info = tk.Label(lesson, text=f"Khai cuộc '{name}' chưa có dữ liệu dạy.\nHãy xem chi tiết trong '70+ Khai Cuộc'",
+                               bg='#2a2a2a', fg='#ffaa00', font=("Arial", 12), padx=20, pady=20)
+                info.pack()
+
+        ttk.Button(win, text="🎓 Bắt Đầu Học", command=show_lesson).pack(pady=10)
+
     def start_game(self, mode):
         self.game_mode = mode
         self.game = ChessGame()
@@ -401,18 +463,32 @@ class ChessGUI:
 
             if self.game.evaluation_history:
                 last = self.game.evaluation_history[-1]
-                eval_sym, eval_range, desc = last['evaluation'].value
+                try:
+                    # Try to unpack evaluation value
+                    evaluation = last['evaluation']
+                    if hasattr(evaluation, 'value'):
+                        eval_sym, eval_range, desc = evaluation.value
+                    else:
+                        eval_sym = str(evaluation)
+                        eval_range = "?"
+                        desc = "Không có lý do"
 
-                msg = f"{eval_sym} Nước: {last['move']}\n"
-                msg += f"Đánh giá: {eval_range}\n"
-                msg += f"Lý do: {desc}"
+                    msg = f"{eval_sym} Nước: {last['move']}\n"
+                    msg += f"Đánh giá: {eval_range}\n"
+                    msg += f"Lý do: {desc}"
 
-                self.eval_display.insert(tk.END, msg)
+                    self.eval_display.insert(tk.END, msg)
+                except (ValueError, AttributeError, TypeError) as unpack_error:
+                    print(f"Error unpacking evaluation: {unpack_error}")
+                    self.eval_display.insert(tk.END, f"Nước: {last['move']}\nĐánh giá: N/A")
 
             self.eval_display.config(state=tk.DISABLED)
         except Exception as e:
             print(f"Error updating eval display: {e}")
-            self.eval_display.config(state=tk.DISABLED)
+            try:
+                self.eval_display.config(state=tk.DISABLED)
+            except:
+                pass
 
     def draw_eval_bar(self, eval_val):
         try:
