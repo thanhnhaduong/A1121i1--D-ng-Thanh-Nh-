@@ -8,6 +8,7 @@ from tkinter import ttk, messagebox
 import chess
 from chess_engine import ChessGame, MultiEngineGame, MoveEvaluation
 from openings_50 import get_opening_by_moves, get_all_openings, get_teaching_data
+from puzzles import get_all_puzzles, count_puzzles
 
 class ChessGUI:
     def __init__(self, root):
@@ -111,6 +112,13 @@ class ChessGUI:
                   width=30).pack(fill=tk.X, padx=10, pady=2)
 
         ttk.Button(parent, text="🤖🤖 AI vs AI", command=self.show_engine_dialog,
+                  width=30).pack(fill=tk.X, padx=10, pady=2)
+
+        # Puzzle Mode
+        tk.Label(parent, text="🧩 Câu Đố", bg='#2a2a2a', fg='#4a9eff',
+                font=("Arial", 10, "bold")).pack(fill=tk.X, padx=10, pady=(15, 5))
+
+        ttk.Button(parent, text=f"🧩 Giải Câu Đố ({count_puzzles()}+)", command=self.show_puzzles,
                   width=30).pack(fill=tk.X, padx=10, pady=2)
 
         # Opening
@@ -314,29 +322,166 @@ class ChessGUI:
                  font=("Arial", 10, "bold"), padx=15, pady=8).pack(pady=15)
 
     def run_battle(self, white_elo, black_elo):
+        """AI vs AI video-style battle with close-up view"""
         win = tk.Toplevel(self.root)
-        win.title(f"AI vs AI - Level {white_elo} vs {black_elo}")
-        win.geometry("600x400")
+        win.title(f"🎬 AI vs AI Video - {white_elo} vs {black_elo}")
+        win.geometry("850x750")
+        win.configure(bg='#1a1a1a')
 
-        text = tk.Text(win, font=("Courier", 10), bg='#1a1a1a', fg='#ffffff')
-        text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # Title
+        title = tk.Label(win, text=f"♔ {white_elo} vs {black_elo} ♚",
+                        bg='#1a1a1a', fg='#4a9eff', font=("Arial", 14, "bold"), pady=10)
+        title.pack(fill=tk.X)
 
-        text.insert(tk.END, f"Level {white_elo} vs {black_elo}\nChơi...\n")
-        win.update()
+        # Status
+        status_label = tk.Label(win, text="⏳ Đang tính toán...", bg='#1a1a1a',
+                               fg='#ffaa00', font=("Arial", 11, "bold"))
+        status_label.pack(fill=tk.X, padx=10, pady=5)
 
-        game = MultiEngineGame(engine1_skill=white_elo, engine2_skill=black_elo)
-        moves = game.play_full_game(max_moves=200)
-        result = game.get_result()
+        # Board canvas
+        board_canvas = tk.Canvas(win, width=480, height=480, bg='#f0d9b5',
+                                highlightthickness=2, highlightbackground='#444')
+        board_canvas.pack(pady=10)
 
-        text.delete(1.0, tk.END)
-        text.insert(tk.END, f"Kết quả: {result}\n")
-        text.insert(tk.END, f"Nước: {len(moves)}\n\n")
-        move_str = ""
-        for i, move in enumerate(moves, 1):
-            move_str += f"{i}. {move}  "
-            if i % 10 == 0:
-                move_str += "\n"
-        text.insert(tk.END, move_str)
+        # Info frame
+        info_frame = tk.Frame(win, bg='#2a2a2a', height=120)
+        info_frame.pack(fill=tk.X, padx=10, pady=5)
+        info_frame.pack_propagate(False)
+
+        # Move info
+        move_info = tk.Label(info_frame, text="Nước: ...", bg='#2a2a2a',
+                            fg='#ffaa00', font=("Arial", 11, "bold"), padx=10, pady=5)
+        move_info.pack(fill=tk.X)
+
+        # Evaluation
+        eval_info = tk.Label(info_frame, text="Đánh giá: ...", bg='#2a2a2a',
+                            fg='#ffffff', font=("Arial", 10), padx=10)
+        eval_info.pack(fill=tk.X)
+
+        # Move list
+        moves_info = tk.Label(info_frame, text="", bg='#2a2a2a',
+                             fg='#ffffff', font=("Arial", 9), padx=10, pady=5, wraplength=800, justify=tk.LEFT)
+        moves_info.pack(fill=tk.BOTH, expand=True)
+
+        # Control frame
+        control_frame = tk.Frame(win, bg='#2a2a2a')
+        control_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        speed_var = tk.StringVar(value="Normal")
+        ttk.Label(control_frame, text="Tốc độ:").pack(side=tk.LEFT, padx=5)
+        ttk.Combobox(control_frame, textvariable=speed_var,
+                    values=["Chậm (4s)", "Normal (2s)", "Nhanh (1s)", "Flash (0.5s)"],
+                    state='readonly', width=15).pack(side=tk.LEFT, padx=5)
+
+        pause_btn = [ttk.Button(control_frame, text="⏸ Tạm Dừng")]
+        pause_btn[0].pack(side=tk.LEFT, padx=5)
+
+        # Play animation
+        def play_battle():
+            try:
+                status_label.config(text="🔄 Đang tính toán nước đi...")
+                win.update()
+
+                game = MultiEngineGame(engine1_skill=white_elo, engine2_skill=black_elo)
+                moves = game.play_full_game(max_moves=200)
+                result = game.get_result()
+
+                status_label.config(text="▶️ Đang phát video...")
+
+                # Get speed
+                speed_text = speed_var.get()
+                if "Chậm" in speed_text:
+                    delay = 4
+                elif "Nhanh" in speed_text:
+                    delay = 1
+                elif "Flash" in speed_text:
+                    delay = 0.5
+                else:
+                    delay = 2
+
+                # Playback
+                playback_board = chess.Board()
+                move_list = []
+
+                for i, move_uci in enumerate(moves):
+                    if not win.winfo_exists():
+                        break
+
+                    try:
+                        move = chess.Move.from_uci(move_uci)
+                        playback_board.push(move)
+                        move_list.append(move_uci)
+                    except:
+                        continue
+
+                    # Update display
+                    side = "♔ Trắng" if i % 2 == 0 else "♚ Đen"
+                    move_num = (i // 2) + 1
+                    move_info.config(text=f"Nước {i+1} ({side}): {move_uci}")
+
+                    # Try to get evaluation
+                    try:
+                        if game.stockfish1.get_evaluation():
+                            eval_val = game.stockfish1.get_evaluation()['value'] / 100
+                            eval_info.config(text=f"📊 Đánh giá: {eval_val:+.2f}")
+                    except:
+                        pass
+
+                    # Build move list display
+                    if i % 2 == 1:
+                        move_text = f"{move_num}. {moves[i-1]} {move_uci}"
+                    else:
+                        move_text = ""
+
+                    if move_text:
+                        current = moves_info.cget("text")
+                        new_text = current + move_text + "  "
+                        if len(new_text.split()) > 50:
+                            new_text = " ".join(new_text.split()[-40:])
+                        moves_info.config(text=new_text)
+
+                    # Draw board
+                    draw_board_video(playback_board)
+
+                    import time
+                    time.sleep(delay)
+
+                # Final state
+                status_label.config(text=f"✅ Kết Thúc: {result}")
+                move_info.config(text=f"🏁 Trò chơi kết thúc sau {len(moves)} nước")
+
+            except Exception as e:
+                status_label.config(text=f"❌ Lỗi: {str(e)}")
+
+        def draw_board_video(board):
+            """Vẽ bàn cờ cho video"""
+            board_canvas.delete("all")
+            sq_size = 60
+
+            # Draw squares
+            for row in range(8):
+                for col in range(8):
+                    x1, y1 = col * sq_size, row * sq_size
+                    x2, y2 = x1 + sq_size, y1 + sq_size
+                    color = '#f0d9b5' if (row + col) % 2 == 0 else '#b58863'
+                    board_canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
+
+            # Draw pieces
+            for square in chess.SQUARES:
+                piece = board.piece_at(square)
+                if piece:
+                    row, col = square // 8, square % 8
+                    x = col * sq_size + sq_size // 2
+                    y = row * sq_size + sq_size // 2
+                    piece_color = '#ffffff' if piece.color else '#000000'
+                    board_canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
+                                            font=("Arial", 40, "bold"), fill=piece_color)
+
+            win.update()
+
+        import threading
+        thread = threading.Thread(target=play_battle, daemon=True)
+        thread.start()
 
     def show_openings(self):
         win = tk.Toplevel(self.root)
@@ -750,8 +895,8 @@ class ChessGUI:
             # Clamp evaluation to reasonable range
             eval_clamped = min(max(eval_val, -500), 500)
 
-            # Calculate bar width based on evaluation
-            pct = eval_clamped / 500.0
+            # Calculate bar width based on evaluation (flip for correct display)
+            pct = -eval_clamped / 500.0
             white_width = center + (center * pct)
             white_width = max(0, min(white_width, width))
 
@@ -851,6 +996,216 @@ class ChessGUI:
 
         except Exception as e:
             messagebox.showerror("Lỗi", f"Lỗi: {str(e)}")
+
+    def show_puzzles(self):
+        """Hiển thị chế độ giải câu đố"""
+        puzzles = get_all_puzzles()
+        puzzle_list = list(puzzles.keys())
+
+        win = tk.Toplevel(self.root)
+        win.title(f"🧩 Giải Câu Đố ({len(puzzles)}+)")
+        win.geometry("900x650")
+
+        # Current puzzle state
+        current_puzzle_idx = [0]
+        solved_count = [0]
+
+        # Top frame - puzzle selector
+        top = tk.Frame(win, bg='#2a2a2a')
+        top.pack(fill=tk.X, padx=10, pady=10)
+
+        tk.Label(top, text="Chọn Câu Đố:", bg='#2a2a2a', fg='#4a9eff',
+                font=("Arial", 10, "bold")).pack(side=tk.LEFT, padx=5)
+
+        puzzle_var = tk.StringVar(value=puzzle_list[0] if puzzle_list else "")
+        puzzle_combo = ttk.Combobox(top, textvariable=puzzle_var, values=puzzle_list,
+                                   state='readonly', width=40)
+        puzzle_combo.pack(side=tk.LEFT, padx=5)
+
+        status_label = tk.Label(top, text=f"Giải: 0/{len(puzzles)}", bg='#2a2a2a',
+                               fg='#ffaa00', font=("Arial", 10, "bold"))
+        status_label.pack(side=tk.RIGHT, padx=5)
+
+        # Middle - board and info
+        middle = tk.Frame(win, bg='#1a1a1a')
+        middle.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+        # Left - board
+        left = tk.Frame(middle, bg='#1a1a1a')
+        left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        puzzle_canvas = tk.Canvas(left, width=480, height=480, bg='#f0d9b5',
+                                 highlightthickness=1, highlightbackground='#444')
+        puzzle_canvas.pack()
+        puzzle_canvas.bind("<Button-1>", lambda e: on_puzzle_click(e))
+
+        # Right - info
+        right = tk.Frame(middle, bg='#2a2a2a', width=350)
+        right.pack(side=tk.RIGHT, fill=tk.BOTH, padx=(10, 0))
+        right.pack_propagate(False)
+
+        tk.Label(right, text="📋 Thông Tin", bg='#2a2a2a', fg='#4a9eff',
+                font=("Arial", 10, "bold")).pack(fill=tk.X, padx=10, pady=(10, 5))
+
+        info_text = tk.Text(right, height=8, bg='#1a1a1a', fg='#ffffff',
+                           font=("Arial", 9), wrap=tk.WORD)
+        info_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+        difficulty_label = tk.Label(right, text="Độ Khó: ?", bg='#2a2a2a', fg='#ffaa00',
+                                   font=("Arial", 9))
+        difficulty_label.pack(fill=tk.X, padx=10, pady=2)
+
+        theme_label = tk.Label(right, text="Chủ Đề: ?", bg='#2a2a2a', fg='#ffaa00',
+                              font=("Arial", 9))
+        theme_label.pack(fill=tk.X, padx=10, pady=2)
+
+        tk.Label(right, text="💡 Gợi Ý", bg='#2a2a2a', fg='#4a9eff',
+                font=("Arial", 10, "bold")).pack(fill=tk.X, padx=10, pady=(10, 5))
+
+        hint_text = tk.Text(right, height=3, bg='#1a1a1a', fg='#ffaa00',
+                           font=("Arial", 9), wrap=tk.WORD)
+        hint_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+        # Variables for puzzle state
+        puzzle_game = [None]
+        selected_sq = [None]
+
+        def load_puzzle(puzzle_name):
+            """Tải câu đố"""
+            if puzzle_name not in puzzles:
+                return
+
+            puzzle_data = puzzles[puzzle_name]
+            puzzle_board = chess.Board(puzzle_data['fen'])
+            puzzle_game[0] = puzzle_board
+            selected_sq[0] = None
+
+            # Update UI
+            info_text.config(state=tk.NORMAL)
+            info_text.delete(1.0, tk.END)
+            info_text.insert(tk.END, f"📖 {puzzle_name}\n\n")
+            info_text.insert(tk.END, f"Mô tả:\n{puzzle_data['description']}\n")
+            info_text.config(state=tk.DISABLED)
+
+            difficulty_label.config(text=f"Độ Khó: {'⭐' * puzzle_data['difficulty']}")
+            theme_label.config(text=f"Chủ Đề: {puzzle_data['theme']}")
+
+            hint_text.config(state=tk.NORMAL)
+            hint_text.delete(1.0, tk.END)
+            hint_text.insert(tk.END, puzzle_data['hint'])
+            hint_text.config(state=tk.DISABLED)
+
+            draw_puzzle_board()
+
+        def draw_puzzle_board():
+            """Vẽ bàn cờ câu đố"""
+            if not puzzle_game[0]:
+                return
+
+            puzzle_canvas.delete("all")
+            board = puzzle_game[0]
+            sq_size = 60
+
+            # Draw squares
+            for row in range(8):
+                for col in range(8):
+                    x1, y1 = col * sq_size, row * sq_size
+                    x2, y2 = x1 + sq_size, y1 + sq_size
+                    color = '#f0d9b5' if (row + col) % 2 == 0 else '#b58863'
+                    puzzle_canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
+
+            # Draw pieces
+            for square in chess.SQUARES:
+                piece = board.piece_at(square)
+                if piece:
+                    row, col = square // 8, square % 8
+                    x = col * sq_size + sq_size // 2
+                    y = row * sq_size + sq_size // 2
+                    piece_color = '#ffffff' if piece.color else '#000000'
+                    puzzle_canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
+                                             font=("Arial", 40, "bold"), fill=piece_color)
+
+        def on_puzzle_click(event):
+            """Xử lý click khi giải câu đố"""
+            if not puzzle_game[0]:
+                return
+
+            sq_size = 60
+            col = event.x // sq_size
+            row = event.y // sq_size
+            square = row * 8 + col
+
+            board = puzzle_game[0]
+
+            if selected_sq[0] is None:
+                piece = board.piece_at(square)
+                if piece and piece.color == board.turn:
+                    selected_sq[0] = square
+                    draw_puzzle_board()
+
+                    # Highlight legal moves
+                    for move in board.legal_moves:
+                        if move.from_square == square:
+                            to_row, to_col = move.to_square // 8, move.to_square % 8
+                            x = to_col * sq_size + sq_size // 2
+                            y = to_row * sq_size + sq_size // 2
+                            puzzle_canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill='lime')
+            else:
+                move = chess.Move(selected_sq[0], square)
+                if move in board.legal_moves:
+                    puzzle_name = puzzle_var.get()
+                    best_move = puzzles[puzzle_name]['best_move']
+
+                    board.push(move)
+                    selected_sq[0] = None
+
+                    # Check if correct
+                    if move.uci().startswith(best_move.lower()) or move.uci() == best_move.lower():
+                        solved_count[0] += 1
+                        status_label.config(text=f"Giải: {solved_count[0]}/{len(puzzles)}")
+                        messagebox.showinfo("✅ Đúng!", f"Nước gợi ý: {best_move}\nBạn đã giải đúng!")
+                    else:
+                        messagebox.showwarning("❌ Sai", f"Nước gợi ý: {best_move}\nHãy thử lại!")
+                        board.pop()
+
+                    draw_puzzle_board()
+                else:
+                    selected_sq[0] = None
+                    draw_puzzle_board()
+
+        def on_puzzle_selected(event=None):
+            """Khi chọn câu đố"""
+            load_puzzle(puzzle_var.get())
+
+        puzzle_combo.bind("<<ComboboxSelected>>", on_puzzle_selected)
+
+        # Load first puzzle
+        if puzzle_list:
+            load_puzzle(puzzle_list[0])
+
+        # Bottom buttons
+        bottom = tk.Frame(win, bg='#2a2a2a')
+        bottom.pack(fill=tk.X, padx=10, pady=10)
+
+        ttk.Button(bottom, text="⬅️ Câu Trước", command=lambda: navigate_puzzle(-1)).pack(side=tk.LEFT, padx=5)
+        ttk.Button(bottom, text="➡️ Câu Sau", command=lambda: navigate_puzzle(1)).pack(side=tk.LEFT, padx=5)
+        ttk.Button(bottom, text="🔄 Làm Lại", command=lambda: load_puzzle(puzzle_var.get())).pack(side=tk.LEFT, padx=5)
+        ttk.Button(bottom, text="💡 Xem Đáp Án", command=show_answer).pack(side=tk.LEFT, padx=5)
+
+        def navigate_puzzle(direction):
+            """Di chuyển giữa các câu đố"""
+            current = puzzle_combo.current()
+            new_idx = current + direction
+            if 0 <= new_idx < len(puzzle_list):
+                puzzle_combo.current(new_idx)
+                on_puzzle_selected()
+
+        def show_answer():
+            """Hiển thị đáp án"""
+            puzzle_name = puzzle_var.get()
+            if puzzle_name in puzzles:
+                best = puzzles[puzzle_name]['best_move']
+                messagebox.showinfo("💡 Đáp Án", f"Nước tốt nhất: {best}")
 
     def flip_board(self):
         """Xoay bàn cờ"""
