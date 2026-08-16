@@ -169,8 +169,31 @@ class ChessGame:
 class MultiEngineGame:
     def __init__(self, engine1_skill=18, engine2_skill=15):
         self.board = chess.Board()
-        self.stockfish1 = Stockfish()
-        self.stockfish2 = Stockfish()
+
+        # Try multiple paths to find Stockfish
+        stockfish_paths = [
+            r"C:\Users\admin\Downloads\stockfish-windows-x86-64-avx2\stockfish\stockfish-windows-x86-64-avx2.exe",
+            r"C:\Program Files\Stockfish\stockfish.exe",
+            r"C:\Program Files (x86)\Stockfish\stockfish.exe",
+            "stockfish"
+        ]
+
+        stockfish_path = None
+        for path in stockfish_paths:
+            try:
+                test = Stockfish(path=path)
+                stockfish_path = path
+                break
+            except:
+                continue
+
+        # Initialize with found path or default
+        if stockfish_path:
+            self.stockfish1 = Stockfish(path=stockfish_path)
+            self.stockfish2 = Stockfish(path=stockfish_path)
+        else:
+            self.stockfish1 = Stockfish()
+            self.stockfish2 = Stockfish()
 
         self.stockfish1.set_skill_level(engine1_skill)
         self.stockfish2.set_skill_level(engine2_skill)

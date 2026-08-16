@@ -1154,18 +1154,28 @@ class ChessGUI:
                 move = chess.Move(selected_sq[0], square)
                 if move in board.legal_moves:
                     puzzle_name = puzzle_var.get()
-                    best_move = puzzles[puzzle_name]['best_move']
+                    best_move_str = puzzles[puzzle_name]['best_move']
+
+                    # Convert move to SAN for comparison
+                    try:
+                        move_san = board.san(move)
+                    except:
+                        move_san = move.uci()
+
+                    # Check if correct (compare with SAN notation)
+                    is_correct = (move_san == best_move_str or
+                                 move_san.lower() == best_move_str.lower() or
+                                 move.uci().startswith(best_move_str.lower()))
 
                     board.push(move)
                     selected_sq[0] = None
 
-                    # Check if correct
-                    if move.uci().startswith(best_move.lower()) or move.uci() == best_move.lower():
+                    if is_correct:
                         solved_count[0] += 1
                         status_label.config(text=f"Giải: {solved_count[0]}/{len(puzzles)}")
-                        messagebox.showinfo("✅ Đúng!", f"Nước gợi ý: {best_move}\nBạn đã giải đúng!")
+                        messagebox.showinfo("✅ Đúng!", f"Nước gợi ý: {best_move_str}\nBạn đã giải đúng!")
                     else:
-                        messagebox.showwarning("❌ Sai", f"Nước gợi ý: {best_move}\nHãy thử lại!")
+                        messagebox.showwarning("❌ Sai", f"Nước gợi ý: {best_move_str}\nHãy thử lại!")
                         board.pop()
 
                     draw_puzzle_board()
