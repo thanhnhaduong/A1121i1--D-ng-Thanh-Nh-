@@ -140,6 +140,9 @@ class ChessGUI:
         ttk.Button(parent, text="🔄 Làm mới", command=self.reset_game,
                   width=30).pack(fill=tk.X, padx=10, pady=2)
 
+        ttk.Button(parent, text="💡 Gợi Ý Nước Đi", command=self.suggest_move,
+                  width=30).pack(fill=tk.X, padx=10, pady=2)
+
     def draw_board(self):
         self.canvas.delete("all")
 
@@ -746,6 +749,60 @@ class ChessGUI:
     def reset_game(self):
         if self.game_mode:
             self.start_game(self.game_mode)
+
+    def suggest_move(self):
+        """Gợi ý nước đi tốt nhất từ Stockfish"""
+        if not self.game:
+            messagebox.showwarning("Lỗi", "Chưa bắt đầu trò chơi")
+            return
+
+        if not self.game.stockfish_available:
+            messagebox.showwarning("Lỗi", "Stockfish không khả dụng")
+            return
+
+        if self.game.board.is_game_over():
+            messagebox.showinfo("Trò Chơi Kết Thúc", self.get_game_result())
+            return
+
+        try:
+            # Get best move
+            self.game.stockfish.set_fen_position(self.game.board.fen())
+            best_move = self.game.stockfish.get_best_move_time(3000)
+            eval_val = self.game.stockfish.get_evaluation()
+
+            if not best_move:
+                messagebox.showwarning("Lỗi", "Không thể tính toán nước đi")
+                return
+
+            # Convert to readable format
+            move = chess.Move.from_uci(best_move)
+            move_san = self.game.board.san(move)
+
+            # Display suggestion
+            msg = f"💡 Nước Gợi Ý: {move_san} ({best_move})\n\n"
+
+            if eval_val:
+                eval_val_float = eval_val['value'] / 100 if eval_val['type'] == 'cp' else eval_val['value']
+                msg += f"📊 Đánh Giá: {eval_val_float:+.2f}\n\n"
+
+            msg += "Nước này là tốt nhất theo Stockfish.\n"
+            msg += "Bạn có muốn áp dụng nước này không?"
+
+            if messagebox.askyesno("Gợi Ý Nước Đi", msg):
+                # Apply the suggested move
+                if self.game.make_move(best_move):
+                    self.selected_square = None
+                    self.draw_board()
+                    self.update_all()
+
+                    # If human vs AI and it's AI's turn, let AI move
+                    if self.game_mode == 'human_vs_ai' and not self.game.is_game_over():
+                        self.root.after(1000, self.ai_move)
+                else:
+                    messagebox.showerror("Lỗi", "Không thể thực hiện nước đi")
+
+        except Exception as e:
+            messagebox.showerror("Lỗi", f"Lỗi: {str(e)}")
 
     def get_game_result(self):
         if self.game.board.is_checkmate():
