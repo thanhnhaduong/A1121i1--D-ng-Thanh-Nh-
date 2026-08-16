@@ -415,7 +415,100 @@ class ChessGUI:
                                bg='#2a2a2a', fg='#ffaa00', font=("Arial", 12), padx=20, pady=20)
                 info.pack()
 
-        ttk.Button(win, text="🎓 Bắt Đầu Học", command=show_lesson).pack(pady=10)
+        def show_animation():
+            """Xem hoạt ảnh khai cuộc"""
+            if not listbox.curselection():
+                messagebox.showwarning("Chọn Khai Cuộc", "Vui lòng chọn một khai cuộc")
+                return
+
+            name = listbox.get(listbox.curselection()[0])
+            openings_data = get_all_openings()
+
+            if name not in openings_data:
+                messagebox.showerror("Lỗi", "Khai cuộc không tìm thấy")
+                return
+
+            opening = openings_data[name]
+            moves = opening.get('moves', [])
+
+            if not moves:
+                messagebox.showwarning("Không Có Nước", "Khai cuộc này không có nước để hiển thị")
+                return
+
+            # Create animation window
+            anim_win = tk.Toplevel(win)
+            anim_win.title(f"🎬 Hoạt Ảnh - {name}")
+            anim_win.geometry("700x650")
+
+            # Status
+            status_label = tk.Label(anim_win, text="▶️ Đang phát...", bg='#2a2a2a',
+                                   fg='#4a9eff', font=("Arial", 11, "bold"), padx=10, pady=10)
+            status_label.pack(fill=tk.X)
+
+            # Canvas for board
+            canvas = tk.Canvas(anim_win, width=480, height=480, bg='#f0d9b5',
+                              highlightthickness=1, highlightbackground='#444')
+            canvas.pack(pady=5)
+
+            # Info
+            info_label = tk.Label(anim_win, text="Nước: ...", bg='#2a2a2a',
+                                 fg='#ffaa00', font=("Arial", 10, "bold"), padx=10, pady=5)
+            info_label.pack(fill=tk.X)
+
+            def draw_board(board):
+                canvas.delete("all")
+                for row in range(8):
+                    for col in range(8):
+                        x1, y1 = col * 60, row * 60
+                        x2, y2 = x1 + 60, y1 + 60
+                        color = '#f0d9b5' if (row + col) % 2 == 0 else '#b58863'
+                        canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
+
+                for square in chess.SQUARES:
+                    piece = board.piece_at(square)
+                    if piece:
+                        row, col = square // 8, square % 8
+                        x = col * 60 + 30
+                        y = row * 60 + 30
+                        piece_color = '#ffffff' if piece.color else '#000000'
+                        canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
+                                         font=("Arial", 40, "bold"), fill=piece_color)
+                anim_win.update()
+
+            def animate():
+                try:
+                    playback_board = chess.Board()
+
+                    for i, move_uci in enumerate(moves):
+                        try:
+                            move = chess.Move.from_uci(move_uci)
+                            playback_board.push(move)
+                        except:
+                            continue
+
+                        side = "Trắng ♔" if i % 2 == 0 else "Đen ♚"
+                        info_label.config(text=f"Nước {i+1} ({side}): {move_uci}")
+                        draw_board(playback_board)
+
+                        import time
+                        time.sleep(2)
+
+                    status_label.config(text=f"✅ Xong! ({len(moves)} nước)")
+                    info_label.config(text=f"Khai cuộc hoàn thành: {opening.get('description', '')}")
+
+                except Exception as e:
+                    status_label.config(text=f"❌ Lỗi: {str(e)}")
+
+            import threading
+            thread = threading.Thread(target=animate, daemon=True)
+            thread.start()
+
+        # Buttons
+        btn_frame = tk.Frame(win, bg='#2a2a2a')
+        btn_frame.pack(pady=10, fill=tk.X, padx=10)
+
+        ttk.Button(btn_frame, text="🎓 Bắt Đầu Học", command=show_lesson).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="▶️ Xem Hoạt Ảnh", command=show_animation).pack(side=tk.LEFT, padx=5)
 
     def show_analysis(self):
         """Chạy tiếp tục trò chơi bằng 2 bot Stockfish từ vị trí hiện tại - Với animation"""
