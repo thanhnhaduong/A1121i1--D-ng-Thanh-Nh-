@@ -22,6 +22,7 @@ class ChessGUI:
         self.selected_square = None
         self.opponent_skill_level = 18
         self.eval_cache = {}
+        self.board_flipped = False  # Xoay bàn cờ
 
         self.square_size = 60
 
@@ -143,12 +144,23 @@ class ChessGUI:
         ttk.Button(parent, text="💡 Gợi Ý Nước Đi", command=self.suggest_move,
                   width=30).pack(fill=tk.X, padx=10, pady=2)
 
+        ttk.Button(parent, text="🔄 Xoay Bàn Cờ", command=self.flip_board,
+                  width=30).pack(fill=tk.X, padx=10, pady=2)
+
+    def get_display_coords(self, row, col):
+        """Chuyển đổi tọa độ dựa trên trạng thái xoay bàn"""
+        if self.board_flipped:
+            row = 7 - row
+            col = 7 - col
+        return row, col
+
     def draw_board(self):
         self.canvas.delete("all")
 
         for row in range(8):
             for col in range(8):
-                x1, y1 = col * self.square_size, row * self.square_size
+                disp_row, disp_col = self.get_display_coords(row, col)
+                x1, y1 = disp_col * self.square_size, disp_row * self.square_size
                 x2, y2 = x1 + self.square_size, y1 + self.square_size
                 color = self.COLORS['light'] if (row + col) % 2 == 0 else self.COLORS['dark']
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
@@ -157,7 +169,8 @@ class ChessGUI:
             king_pos = self.game.board.king(self.game.board.turn)
             if king_pos:
                 row, col = king_pos // 8, king_pos % 8
-                x1, y1 = col * self.square_size, row * self.square_size
+                disp_row, disp_col = self.get_display_coords(row, col)
+                x1, y1 = disp_col * self.square_size, disp_row * self.square_size
                 x2, y2 = x1 + self.square_size, y1 + self.square_size
                 self.canvas.create_rectangle(x1, y1, x2, y2, outline=self.COLORS['check'], width=3)
 
@@ -166,8 +179,9 @@ class ChessGUI:
                 piece = self.game.board.piece_at(square)
                 if piece:
                     row, col = square // 8, square % 8
-                    x = col * self.square_size + self.square_size // 2
-                    y = row * self.square_size + self.square_size // 2
+                    disp_row, disp_col = self.get_display_coords(row, col)
+                    x = disp_col * self.square_size + self.square_size // 2
+                    y = disp_row * self.square_size + self.square_size // 2
                     piece_color = self.COLORS['white'] if piece.color else self.COLORS['black']
                     self.canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
                                            font=("Arial", 50, "bold"), fill=piece_color)
@@ -184,6 +198,12 @@ class ChessGUI:
 
         col = event.x // self.square_size
         row = event.y // self.square_size
+
+        # Xử lý bàn cờ xoay
+        if self.board_flipped:
+            row = 7 - row
+            col = 7 - col
+
         square = row * 8 + col
 
         if self.selected_square is None:
@@ -721,24 +741,52 @@ class ChessGUI:
 
             width = 1200
             height = 35
+            center = width / 2
 
             # Safely handle eval_val
             if eval_val is None or not isinstance(eval_val, (int, float)):
                 eval_val = 0
 
-            pct = min(max((eval_val / 500), -1), 1)
-            white_width = (width / 2) * (1 + pct)
+            # Clamp evaluation to reasonable range
+            eval_clamped = min(max(eval_val, -500), 500)
 
-            self.eval_canvas.create_rectangle(0, 0, white_width, height, fill='#ffffff', outline='')
-            self.eval_canvas.create_rectangle(white_width, 0, width, height, fill='#000000', outline='')
-            self.eval_canvas.create_line(width / 2, 0, width / 2, height, fill='#444444', width=2)
+            # Calculate bar width based on evaluation
+            pct = eval_clamped / 500.0
+            white_width = center + (center * pct)
+            white_width = max(0, min(white_width, width))
 
-            eval_str = f"{eval_val/100:+.2f}"
-            msg = "Bằng" if abs(eval_val) < 5 else ("Trắng thắng" if eval_val > 300 else "Đen thắng")
+            # Draw white segment (left/bottom for white)
+            if white_width > 0:
+                self.eval_canvas.create_rectangle(0, 0, white_width, height, fill='#ffffff', outline='')
 
-            self.eval_label.config(text=f"Đánh giá: {eval_str} | {msg}")
+            # Draw black segment (right/top for black)
+            if white_width < width:
+                self.eval_canvas.create_rectangle(white_width, 0, width, height, fill='#000000', outline='')
+
+            # Draw center line
+            self.eval_canvas.create_line(center, 0, center, height, fill='#666666', width=1)
+
+            # Display evaluation
+            eval_display = f"{eval_val/100:+.2f}"
+
+            # Determine position evaluation
+            if abs(eval_val) < 25:
+                msg = "⚖️ Bằng"
+            elif eval_val > 300:
+                msg = "✅ Trắng Thắng"
+            elif eval_val < -300:
+                msg = "✅ Đen Thắng"
+            elif eval_val > 100:
+                msg = "➕ Trắng Tốt"
+            elif eval_val < -100:
+                msg = "➕ Đen Tốt"
+            else:
+                msg = "≈ Gần Bằng"
+
+            self.eval_label.config(text=f"Đánh giá: {eval_display} | {msg}")
         except Exception as e:
             print(f"Error in draw_eval_bar: {e}")
+            self.eval_label.config(text="Đánh giá: N/A")
 
     def undo_move(self):
         if self.game and self.game.move_history:
@@ -803,6 +851,11 @@ class ChessGUI:
 
         except Exception as e:
             messagebox.showerror("Lỗi", f"Lỗi: {str(e)}")
+
+    def flip_board(self):
+        """Xoay bàn cờ"""
+        self.board_flipped = not self.board_flipped
+        self.draw_board()
 
     def get_game_result(self):
         if self.game.board.is_checkmate():
