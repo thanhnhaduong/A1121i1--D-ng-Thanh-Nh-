@@ -61,7 +61,15 @@ class ChessGUI:
 
         self.eval_label = tk.Label(main, text="Đánh giá: 0.00 | Bằng nhau",
                                    bg='#1a1a1a', fg='#ffffff', font=("Arial", 9))
-        self.eval_label.pack(fill=tk.X, padx=10, pady=(0, 5))
+        self.eval_label.pack(fill=tk.X, padx=10, pady=(0, 2))
+
+        # Move analysis display
+        self.analysis_frame = tk.Frame(main, bg='#1a1a1a')
+        self.analysis_frame.pack(fill=tk.X, padx=10, pady=(0, 5))
+
+        self.analysis_label = tk.Label(self.analysis_frame, text="", bg='#1a1a1a',
+                                      fg='#aaaaaa', font=("Arial", 8), wraplength=1200, justify=tk.LEFT)
+        self.analysis_label.pack(fill=tk.X)
 
         # Main area
         middle = tk.Frame(main, bg='#1a1a1a')
@@ -911,9 +919,26 @@ class ChessGUI:
                 msg = "≈ Nearly Even"
 
             self.eval_label.config(text=f"Chất Lượng Nước: {eval_display} | {msg}")
+
+            # Show detailed analysis
+            if self.game and self.game.evaluation_history:
+                last_move = self.game.evaluation_history[-1]
+                eval_before = last_move.get('eval_before')
+                eval_after = last_move.get('eval_after')
+                move = last_move.get('move', '-')
+
+                if eval_before is not None and eval_after is not None:
+                    analysis_text = f"Nước: {move} | Thế cộc trước: {eval_before/100:+.2f} | Thế cộc sau: {eval_after/100:+.2f} | Thay đổi: {eval_val/100:+.2f}"
+                    self.analysis_label.config(text=analysis_text)
+                else:
+                    self.analysis_label.config(text="")
+            else:
+                self.analysis_label.config(text="")
+
         except Exception as e:
             print(f"Error in draw_eval_bar: {e}")
             self.eval_label.config(text="Đánh giá: N/A")
+            self.analysis_label.config(text="")
 
     def undo_move(self):
         if self.game and self.game.move_history:
