@@ -899,24 +899,22 @@ class ChessGUI:
             # Display evaluation CHANGE (move quality)
             eval_display = f"{eval_val/100:+.2f}"
 
-            # Determine move quality based on change
+            # Determine move quality based on change (sensitive thresholds)
             # This shows how good/bad the LAST MOVE was
-            if abs(eval_val) < 25:
+            if eval_val >= 100:
+                msg = "✨ BRILLIANT! (+1 pawn)"
+            elif eval_val >= 50:
+                msg = "✓ Excellent (+0.5 pawns)"
+            elif eval_val >= 10:
+                msg = "👍 Good (+0.1 pawns)"
+            elif eval_val >= -10:
                 msg = "⚖️ Bằng (Neutral)"
-            elif eval_val > 300:
-                msg = "✨ BRILLIANT! (+3 pawns)"
-            elif eval_val < -300:
-                msg = "💥 BLUNDER! (-3 pawns)"
-            elif eval_val > 100:
-                msg = "✓ Excellent (+1 pawns)"
-            elif eval_val < -100:
-                msg = "❌ Mistake (-1 pawns)"
-            elif eval_val > 25:
-                msg = "👍 Good (+0.25 pawns)"
-            elif eval_val < -25:
-                msg = "⚠️ Inaccuracy (-0.25 pawns)"
+            elif eval_val >= -50:
+                msg = "⚠️ Inaccuracy (-0.1-0.5 pawns)"
+            elif eval_val >= -100:
+                msg = "❌ Mistake (-0.5-1 pawns)"
             else:
-                msg = "≈ Nearly Even"
+                msg = "💥 BLUNDER! (-1 pawn)"
 
             self.eval_label.config(text=f"Chất Lượng Nước: {eval_display} | {msg}")
 

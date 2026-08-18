@@ -91,23 +91,26 @@ class ChessGame:
 
             change_pawn = change / 100
 
-            # Thresholds in centipawns
-            # BRILLIANT: > +300 cp (> 3 pawns improvement)
-            # EXCELLENT: +100 to +300 cp (1-3 pawns improvement)
-            # GOOD: -25 to +100 cp (roughly even to 1 pawn better)
-            # INACCURACY: -25 to -100 cp (0.25-1 pawn worse)
-            # MISTAKE: -100 to -300 cp (1-3 pawns worse)
-            # BLUNDER: < -300 cp (> 3 pawns worse)
+            # Thresholds in centipawns (sensitive range: -50 to 50)
+            # BRILLIANT: >= +100 cp (exceptional improvement)
+            # EXCELLENT: >= +50 cp (good improvement)
+            # GOOD: >= +10 cp (slight improvement)
+            # NEUTRAL: -10 to +10 cp (nearly even)
+            # INACCURACY: -10 to -50 cp (slight deterioration)
+            # MISTAKE: -50 to -100 cp (notable deterioration)
+            # BLUNDER: < -100 cp (serious mistake)
 
-            if change >= 300:
+            if change >= 100:
                 return MoveEvaluation.BRILLIANT
-            elif change >= 100:
+            elif change >= 50:
                 return MoveEvaluation.EXCELLENT
-            elif change >= -25:
+            elif change >= 10:
                 return MoveEvaluation.GOOD
-            elif change >= -100:
+            elif change >= -10:
+                return MoveEvaluation.GOOD
+            elif change >= -50:
                 return MoveEvaluation.INACCURACY
-            elif change >= -300:
+            elif change >= -100:
                 return MoveEvaluation.MISTAKE
             else:
                 return MoveEvaluation.BLUNDER
