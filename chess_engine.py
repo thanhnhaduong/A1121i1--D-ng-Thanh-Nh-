@@ -84,8 +84,9 @@ class ChessGame:
         if isinstance(eval_before, int) and isinstance(eval_after, int):
             change = eval_after - eval_before
 
-            # Flip perspective for Black's moves (opposite of before)
-            if len(self.move_history) % 2 != 0:
+            # Flip perspective for Black's moves
+            # len(move_history) is EVEN after Black moves (1, 3, 5... = white; 2, 4, 6... = black)
+            if len(self.move_history) % 2 == 0:  # Black just moved
                 change = -change
 
             change_pawn = change / 100
