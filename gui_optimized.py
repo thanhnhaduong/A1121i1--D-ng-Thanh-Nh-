@@ -814,10 +814,21 @@ class ChessGUI:
             return
 
         try:
-            # Evaluation - handle None case
-            eval_val = self.game.get_evaluation()
-            if eval_val is None:
+            # Evaluation bar: use move quality from last move if available
+            # Otherwise use current position evaluation
+            eval_val = 0
+
+            if self.game.evaluation_history:
+                # Use the eval_after from last move (position evaluation after move)
+                last_move_data = self.game.evaluation_history[-1]
+                if 'eval_after' in last_move_data:
+                    eval_val = last_move_data['eval_after']
+                else:
+                    eval_val = 0
+            else:
+                # No moves yet, show starting position (roughly equal)
                 eval_val = 0
+
             self.draw_eval_bar(eval_val)
         except Exception as e:
             print(f"Error in draw_eval_bar: {e}")
@@ -848,22 +859,29 @@ class ChessGUI:
                 has_last_move = True
                 last = self.game.evaluation_history[-1]
                 try:
-                    # Try to unpack evaluation value
+                    # MoveEvaluation is an enum with (symbol, range, description) in .value
                     evaluation = last['evaluation']
-                    if hasattr(evaluation, 'value'):
+                    # Get the tuple from the enum
+                    if hasattr(evaluation, 'value') and isinstance(evaluation.value, tuple):
                         eval_sym, eval_range, desc = evaluation.value
                     else:
-                        eval_sym = str(evaluation)
+                        # Fallback: try to construct from enum name
+                        eval_sym = evaluation.name if hasattr(evaluation, 'name') else str(evaluation)
                         eval_range = "?"
-                        desc = "Không có lý do"
+                        desc = "Không có dữ liệu"
 
-                    msg = f"{eval_sym} Nước: {last['move']}\n"
+                    # Build message
+                    msg = f"{eval_sym}\n"
+                    msg += f"Nước: {last['move']}\n"
                     msg += f"Đánh giá: {eval_range}"
 
                     self.eval_display.insert(tk.END, msg)
                 except (ValueError, AttributeError, TypeError) as unpack_error:
                     print(f"Error unpacking evaluation: {unpack_error}")
-                    self.eval_display.insert(tk.END, f"Nước: {last['move']}\nĐánh giá: N/A")
+                    if last and 'move' in last:
+                        self.eval_display.insert(tk.END, f"Nước: {last['move']}\nĐánh giá: Lỗi dữ liệu")
+                    else:
+                        self.eval_display.insert(tk.END, "Đánh giá: N/A")
 
             # Enable/disable analysis button
             if has_last_move and self.game.stockfish_available:
@@ -895,8 +913,10 @@ class ChessGUI:
             # Clamp evaluation to reasonable range
             eval_clamped = min(max(eval_val, -500), 500)
 
-            # Calculate bar width based on evaluation (flip for correct display)
-            pct = -eval_clamped / 500.0
+            # Calculate bar width based on evaluation
+            # eval_val > 0 means white is better (white gets more of the bar)
+            # eval_val < 0 means black is better (black gets more of the bar)
+            pct = eval_clamped / 500.0
             white_width = center + (center * pct)
             white_width = max(0, min(white_width, width))
 
