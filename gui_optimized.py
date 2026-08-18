@@ -790,9 +790,6 @@ class ChessGUI:
 
         self.status_label.config(text="👥 Chơi" if mode == "human_vs_human" else "🤖 vs AI")
         self.is_human_white = True
-        self.eval_display.config(state=tk.NORMAL)
-        self.eval_display.delete(1.0, tk.END)
-        self.eval_display.config(state=tk.DISABLED)
 
         self.draw_board()
         self.update_all()
