@@ -814,19 +814,26 @@ class ChessGUI:
             return
 
         try:
-            # Evaluation bar: use move quality from last move if available
-            # Otherwise use current position evaluation
+            # Evaluation bar: show CHANGE in evaluation (move quality)
+            # NOT absolute position evaluation
             eval_val = 0
 
             if self.game.evaluation_history:
-                # Use the eval_after from last move (position evaluation after move)
+                # Calculate change: eval_after - eval_before
                 last_move_data = self.game.evaluation_history[-1]
-                if 'eval_after' in last_move_data:
-                    eval_val = last_move_data['eval_after']
+                if 'eval_before' in last_move_data and 'eval_after' in last_move_data:
+                    eval_before = last_move_data['eval_before']
+                    eval_after = last_move_data['eval_after']
+                    if eval_before is not None and eval_after is not None:
+                        change = eval_after - eval_before
+                        # Flip perspective for Black's moves
+                        if len(self.game.move_history) % 2 == 0:  # Black just moved
+                            change = -change
+                        eval_val = change
                 else:
                     eval_val = 0
             else:
-                # No moves yet, show starting position (roughly equal)
+                # No moves yet
                 eval_val = 0
 
             self.draw_eval_bar(eval_val)
@@ -931,24 +938,29 @@ class ChessGUI:
             # Draw center line
             self.eval_canvas.create_line(center, 0, center, height, fill='#666666', width=1)
 
-            # Display evaluation
+            # Display evaluation CHANGE (move quality)
             eval_display = f"{eval_val/100:+.2f}"
 
-            # Determine position evaluation
+            # Determine move quality based on change
+            # This shows how good/bad the LAST MOVE was
             if abs(eval_val) < 25:
-                msg = "⚖️ Bằng"
+                msg = "⚖️ Bằng (Neutral)"
             elif eval_val > 300:
-                msg = "✅ Trắng Thắng"
+                msg = "✨ BRILLIANT! (+3 pawns)"
             elif eval_val < -300:
-                msg = "✅ Đen Thắng"
+                msg = "💥 BLUNDER! (-3 pawns)"
             elif eval_val > 100:
-                msg = "➕ Trắng Tốt"
+                msg = "✓ Excellent (+1 pawns)"
             elif eval_val < -100:
-                msg = "➕ Đen Tốt"
+                msg = "❌ Mistake (-1 pawns)"
+            elif eval_val > 25:
+                msg = "👍 Good (+0.25 pawns)"
+            elif eval_val < -25:
+                msg = "⚠️ Inaccuracy (-0.25 pawns)"
             else:
-                msg = "≈ Gần Bằng"
+                msg = "≈ Nearly Even"
 
-            self.eval_label.config(text=f"Đánh giá: {eval_display} | {msg}")
+            self.eval_label.config(text=f"Chất Lượng Nước: {eval_display} | {msg}")
         except Exception as e:
             print(f"Error in draw_eval_bar: {e}")
             self.eval_label.config(text="Đánh giá: N/A")
