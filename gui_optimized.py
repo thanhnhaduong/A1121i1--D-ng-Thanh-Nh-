@@ -83,22 +83,55 @@ class ChessGUI:
 
         self.create_right_panel(right)
 
-        # Move evaluation display
+        # Move evaluation display (Chess.com style)
         bottom = tk.Frame(main, bg='#2a2a2a')
         bottom.pack(fill=tk.X, padx=10, pady=(5, 10))
 
-        tk.Label(bottom, text="📊 Đánh Giá Nước Đi", bg='#2a2a2a', fg='#4a9eff',
-                font=("Arial", 10, "bold")).pack(fill=tk.X, padx=10, pady=(5, 0))
+        # Move evaluation card
+        eval_card = tk.Frame(bottom, bg='#1a1a1a', relief=tk.RAISED, bd=1)
+        eval_card.pack(fill=tk.X, pady=(5, 0))
 
-        # Info display
-        self.eval_display = tk.Text(bottom, height=3, bg='#1a1a1a', fg='#ffffff',
-                                   font=("Arial", 9), wrap=tk.WORD)
-        self.eval_display.pack(fill=tk.X, padx=10, pady=5)
+        # Top row: emoji + quality + centipawns
+        top_row = tk.Frame(eval_card, bg='#1a1a1a')
+        top_row.pack(fill=tk.X, padx=15, pady=(10, 5))
 
-        # Analysis button
-        self.analysis_btn = ttk.Button(bottom, text="🔍 Xem Phân Tích (Bot Tiếp Tục)",
+        self.move_emoji = tk.Label(top_row, text="", bg='#1a1a1a', fg='#ffffff',
+                                  font=("Arial", 28, "bold"))
+        self.move_emoji.pack(side=tk.LEFT, padx=(0, 10))
+
+        self.move_quality_label = tk.Label(top_row, text="Chủ yếu nước đầu tiên",
+                                          bg='#1a1a1a', fg='#ffaa00',
+                                          font=("Arial", 12, "bold"))
+        self.move_quality_label.pack(side=tk.LEFT, expand=True, anchor=tk.W)
+
+        self.move_centipawn = tk.Label(top_row, text="+0.00", bg='#1a1a1a',
+                                      fg='#4a9eff', font=("Arial", 14, "bold"))
+        self.move_centipawn.pack(side=tk.RIGHT, padx=(10, 0))
+
+        # Middle row: Move notation + description
+        mid_row = tk.Frame(eval_card, bg='#1a1a1a')
+        mid_row.pack(fill=tk.X, padx=15, pady=5)
+
+        self.move_notation = tk.Label(mid_row, text="Nước: -", bg='#1a1a1a',
+                                     fg='#ffffff', font=("Arial", 11))
+        self.move_notation.pack(side=tk.LEFT, expand=True, anchor=tk.W)
+
+        self.move_description = tk.Label(mid_row, text="", bg='#1a1a1a',
+                                        fg='#aaaaaa', font=("Arial", 9))
+        self.move_description.pack(side=tk.RIGHT)
+
+        # Bottom row: Analysis button
+        btn_row = tk.Frame(eval_card, bg='#1a1a1a')
+        btn_row.pack(fill=tk.X, padx=15, pady=(5, 10))
+
+        self.analysis_btn = ttk.Button(btn_row, text="🔍 Xem Phân Tích (Bot Tiếp Tục)",
                                        command=self.show_analysis, state=tk.DISABLED)
-        self.analysis_btn.pack(fill=tk.X, padx=10, pady=5)
+        self.analysis_btn.pack(side=tk.LEFT, padx=(0, 5))
+
+        # Keep old eval_display hidden but available for compatibility
+        self.eval_display = tk.Text(bottom, height=0, bg='#1a1a1a', fg='#ffffff',
+                                   font=("Arial", 9), wrap=tk.WORD)
+        self.eval_display.pack_forget()
 
     def create_right_panel(self, parent):
         # Game mode
@@ -857,38 +890,50 @@ class ChessGUI:
             self.opening_label.config(text="Khai cuộc: -")
 
         try:
-            # Move evaluation display
-            self.eval_display.config(state=tk.NORMAL)
-            self.eval_display.delete(1.0, tk.END)
-
+            # Move evaluation display (Chess.com style card)
             has_last_move = False
             if self.game.evaluation_history:
                 has_last_move = True
                 last = self.game.evaluation_history[-1]
                 try:
-                    # MoveEvaluation is an enum with (symbol, range, description) in .value
+                    # Get move evaluation
                     evaluation = last['evaluation']
-                    # Get the tuple from the enum
                     if hasattr(evaluation, 'value') and isinstance(evaluation.value, tuple):
                         eval_sym, eval_range, desc = evaluation.value
                     else:
-                        # Fallback: try to construct from enum name
-                        eval_sym = evaluation.name if hasattr(evaluation, 'name') else str(evaluation)
-                        eval_range = "?"
-                        desc = "Không có dữ liệu"
+                        eval_sym = "?"
+                        eval_range = "N/A"
+                        desc = "Lỗi dữ liệu"
 
-                    # Build message
-                    msg = f"{eval_sym}\n"
-                    msg += f"Nước: {last['move']}\n"
-                    msg += f"Đánh giá: {eval_range}"
+                    # Calculate centipawn change
+                    if 'eval_before' in last and 'eval_after' in last:
+                        change = last['eval_after'] - last['eval_before']
+                        if len(self.game.move_history) % 2 == 0:
+                            change = -change
+                    else:
+                        change = 0
 
-                    self.eval_display.insert(tk.END, msg)
+                    # Update Chess.com style display
+                    self.move_emoji.config(text=eval_sym.split()[0] if eval_sym else "?")
+                    self.move_quality_label.config(text=eval_sym)
+                    self.move_centipawn.config(text=f"{change/100:+.2f}")
+                    self.move_notation.config(text=f"Nước: {last['move']}")
+                    self.move_description.config(text=eval_range)
+
                 except (ValueError, AttributeError, TypeError) as unpack_error:
                     print(f"Error unpacking evaluation: {unpack_error}")
-                    if last and 'move' in last:
-                        self.eval_display.insert(tk.END, f"Nước: {last['move']}\nĐánh giá: Lỗi dữ liệu")
-                    else:
-                        self.eval_display.insert(tk.END, "Đánh giá: N/A")
+                    self.move_emoji.config(text="?")
+                    self.move_quality_label.config(text="Lỗi dữ liệu")
+                    self.move_centipawn.config(text="N/A")
+                    self.move_notation.config(text="Nước: -")
+                    self.move_description.config(text="")
+            else:
+                # No moves yet
+                self.move_emoji.config(text="")
+                self.move_quality_label.config(text="Chủ yếu nước đầu tiên")
+                self.move_centipawn.config(text="+0.00")
+                self.move_notation.config(text="Nước: -")
+                self.move_description.config(text="")
 
             # Enable/disable analysis button
             if has_last_move and self.game.stockfish_available:
@@ -896,11 +941,9 @@ class ChessGUI:
             else:
                 self.analysis_btn.config(state=tk.DISABLED)
 
-            self.eval_display.config(state=tk.DISABLED)
         except Exception as e:
-            print(f"Error updating eval display: {e}")
+            print(f"Error updating move evaluation display: {e}")
             try:
-                self.eval_display.config(state=tk.DISABLED)
                 self.analysis_btn.config(state=tk.DISABLED)
             except:
                 pass
