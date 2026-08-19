@@ -21,7 +21,7 @@ class ChessGUI:
         self.is_human_white = True
         self.ai_thinking = False
         self.selected_square = None
-        self.opponent_skill_level = 18
+        self.opponent_elo = 1600
         self.eval_cache = {}
         self.board_flipped = False  # Xoay bàn cờ
         self.eval_mode = "classification"  # classification, centipawn, advanced
@@ -41,13 +41,20 @@ class ChessGUI:
             'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
         }
 
+        # ELO thật (UCI_Elo) thay vì Skill Level nội bộ (0-20, không map ra ELO
+        # thực). Dưới ~1320 elo, Stockfish tự nó không thể yếu hơn được nữa,
+        # engine sẽ giả lập thêm bằng cách random hóa 1 phần nước đi
+        # (xem ChessGame.get_best_move trong chess_engine.py).
         self.ELO_LEVELS = {
-            'Easy (5)': 5,
-            'Beginner (8)': 8,
-            'Intermediate (12)': 12,
-            'Advanced (16)': 16,
-            'Master (18)': 18,
-            'GrandMaster (20)': 20
+            'Tân Thủ (~400 Elo)': 400,
+            'Người Mới (~800 Elo)': 800,
+            'Nghiệp Dư (1300 Elo)': 1300,
+            'Trung Cấp (1600 Elo)': 1600,
+            'Khá (1900 Elo)': 1900,
+            'Giỏi (2200 Elo)': 2200,
+            'Kiện Tướng (2500 Elo)': 2500,
+            'Đại Kiện Tướng (2850 Elo)': 2850,
+            'Siêu Đại KT (3190 Elo)': 3190,
         }
 
         self.setup_ui()
@@ -325,20 +332,20 @@ class ChessGUI:
     def select_difficulty(self):
         dialog = tk.Toplevel(self.root)
         dialog.title("Chọn Độ Khó")
-        dialog.geometry("300x350")
+        dialog.geometry("320x480")
         dialog.transient(self.root)
         dialog.grab_set()
 
-        tk.Label(dialog, text="Độ khó AI:", font=("Arial", 11, "bold")).pack(pady=15)
+        tk.Label(dialog, text="Độ khó AI (ELO):", font=("Arial", 11, "bold")).pack(pady=15)
 
-        selected = tk.StringVar(value="Master (18)")
+        selected = tk.StringVar(value="Trung Cấp (1600 Elo)")
 
         for level in self.ELO_LEVELS.keys():
             tk.Radiobutton(dialog, text=level, variable=selected, value=level,
                           font=("Arial", 10)).pack(anchor=tk.W, padx=30, pady=3)
 
         def start():
-            self.opponent_skill_level = self.ELO_LEVELS[selected.get()]
+            self.opponent_elo = self.ELO_LEVELS[selected.get()]
             self.start_game("human_vs_ai")
             dialog.destroy()
 
@@ -348,18 +355,18 @@ class ChessGUI:
     def show_engine_dialog(self):
         dialog = tk.Toplevel(self.root)
         dialog.title("AI vs AI")
-        dialog.geometry("300x350")
+        dialog.geometry("320x700")
         dialog.transient(self.root)
         dialog.grab_set()
 
         tk.Label(dialog, text="Trắng:", font=("Arial", 10, "bold")).pack(pady=(10, 5))
-        white = tk.StringVar(value="Master (18)")
+        white = tk.StringVar(value="Khá (1900 Elo)")
         for level in self.ELO_LEVELS.keys():
             tk.Radiobutton(dialog, text=level, variable=white, value=level,
                           font=("Arial", 9)).pack(anchor=tk.W, padx=30, pady=1)
 
         tk.Label(dialog, text="Đen:", font=("Arial", 10, "bold")).pack(pady=(10, 5))
-        black = tk.StringVar(value="Advanced (16)")
+        black = tk.StringVar(value="Trung Cấp (1600 Elo)")
         for level in self.ELO_LEVELS.keys():
             tk.Radiobutton(dialog, text=level, variable=black, value=level,
                           font=("Arial", 9)).pack(anchor=tk.W, padx=30, pady=1)
@@ -434,7 +441,7 @@ class ChessGUI:
                 status_label.config(text="🔄 Đang tính toán nước đi...")
                 win.update()
 
-                game = MultiEngineGame(engine1_skill=white_elo, engine2_skill=black_elo)
+                game = MultiEngineGame(engine1_elo=white_elo, engine2_elo=black_elo)
                 moves = game.play_full_game(max_moves=200)
                 result = game.get_result()
 
@@ -850,9 +857,9 @@ class ChessGUI:
         self.game = ChessGame()
 
         if self.game.stockfish:
-            # Chỉ lưu độ khó cho nước đi CỦA AI đối thủ; việc đánh giá/chấm điểm
+            # Chỉ lưu ELO cho nước đi CỦA AI đối thủ; việc đánh giá/chấm điểm
             # nước đi vẫn luôn dùng full-strength (xem get_evaluation/get_top_moves)
-            self.game.opponent_skill_level = self.opponent_skill_level
+            self.game.opponent_elo = self.opponent_elo
 
         self.status_label.config(text="👥 Chơi" if mode == "human_vs_human" else "🤖 vs AI")
         self.is_human_white = True
@@ -1314,16 +1321,42 @@ class ChessGUI:
     def get_game_result(self):
         if self.game.board.is_checkmate():
             winner = "Trắng ♔" if not self.game.board.turn else "Đen ♚"
-            return f"Chiếu hết! {winner} thắng!"
-        if self.game.board.is_stalemate():
-            return "Hòa - Bế tắc!"
-        if self.game.board.is_insufficient_material():
-            return "Hòa - Quân cờ không đủ!"
-        if self.game.board.is_seventyfive_moves():
-            return "Hòa - 75 nước không ăn quân!"
-        if self.game.board.is_fivefold_repetition():
-            return "Hòa - Lặp lại 5 lần!"
-        return "Trò chơi kết thúc"
+            result = f"Chiếu hết! {winner} thắng!"
+        elif self.game.board.is_stalemate():
+            result = "Hòa - Bế tắc!"
+        elif self.game.board.is_insufficient_material():
+            result = "Hòa - Quân cờ không đủ!"
+        elif self.game.board.is_seventyfive_moves():
+            result = "Hòa - 75 nước không ăn quân!"
+        elif self.game.board.is_fivefold_repetition():
+            result = "Hòa - Lặp lại 5 lần!"
+        else:
+            result = "Trò chơi kết thúc"
+
+        return result + self.get_accuracy_summary()
+
+    def get_accuracy_summary(self):
+        """Tóm tắt % chính xác + ELO ước tính mỗi bên, để nối vào thông báo
+        kết thúc ván. Đây chỉ là ước lượng tham khảo (xem ChessGame.get_accuracy_stats)."""
+        if not self.game or not self.game.stockfish_available:
+            return ""
+
+        stats = self.game.get_accuracy_stats()
+        if not stats:
+            return ""
+
+        lines = ["\n\n📊 Thống Kê Ván Đấu (ước tính):"]
+        labels = {'white': 'Trắng ♔', 'black': 'Đen ♚'}
+        for color in ('white', 'black'):
+            s = stats.get(color)
+            if s:
+                lines.append(
+                    f"{labels[color]}: {s['accuracy']}% chính xác "
+                    f"(ACPL {s['acpl']}) — ELO ước tính ~{s['estimated_elo']}"
+                )
+        if len(lines) == 1:
+            return ""
+        return "\n".join(lines)
 
 
 def main():

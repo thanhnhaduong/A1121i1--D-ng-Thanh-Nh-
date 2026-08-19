@@ -4,11 +4,18 @@
 """
 
 import os
+import math
+import random
 import chess
 import chess.pgn
 from stockfish import Stockfish
 from enum import Enum
 from datetime import datetime
+
+# Stockfish không thể tự yếu hơn mức ELO sàn này chỉ bằng UCI_Elo (tùy bản build,
+# thường ~1320). Dưới mức này ta phải giả lập thêm bằng cách random hóa nước đi.
+ENGINE_MIN_ELO = 1320
+ENGINE_MAX_ELO = 3190
 
 # Tối ưu cho phần cứng yếu/tầm trung (vd: Intel i3 đời 8):
 # để lại 1 nhân cho hệ điều hành/giao diện, giới hạn tối đa 4 luồng
@@ -81,30 +88,31 @@ class MoveClassifier:
         is_mate = board_after.is_checkmate()
 
         # Phân loại logic - Brilliant và Blunder chỉ khi mất/nhận quá nhiều
+        label = None
         if is_mate:
-            return "best"
+            label = "best"
+        elif cp_gain >= 300:
+            # Brilliant: chỉ khi nhận quá nhiều lợi thế hoặc hy sinh thông minh
+            label = "brilliant"
+        elif material_gain and cp_loss <= 100:
+            label = "brilliant"
+        elif sacrifice and is_top_choice and cp_loss <= 50 and gap >= 300:
+            label = "brilliant"
+        elif is_top_choice and gap >= 200 and abs(eval_before_adjusted) <= 100:
+            label = "great"
+        elif is_top_choice or cp_loss <= 15:
+            label = "best"
+        elif cp_loss <= 75:
+            label = "good"
+        elif cp_loss <= 175:
+            label = "inaccuracy"
+        elif cp_loss <= 350:
+            label = "mistake"
+        else:
+            # Blunder: chỉ khi mất quá nhiều (>3.5 pawn)
+            label = "blunder"
 
-        # Brilliant: chỉ khi nhận quá nhiều lợi thế hoặc hy sinh thông minh
-        if cp_gain >= 300:
-            return "brilliant"
-        if material_gain and cp_loss <= 100:
-            return "brilliant"
-        if sacrifice and is_top_choice and cp_loss <= 50 and gap >= 300:
-            return "brilliant"
-
-        if is_top_choice and gap >= 200 and abs(eval_before_adjusted) <= 100:
-            return "great"
-
-        if is_top_choice or cp_loss <= 15:
-            return "best"
-        if cp_loss <= 75:
-            return "good"
-        if cp_loss <= 175:
-            return "inaccuracy"
-        if cp_loss <= 350:
-            return "mistake"
-        # Blunder: chỉ khi mất quá nhiều (>3.5 pawn)
-        return "blunder"
+        return {"classification": label, "cp_loss": cp_loss}
 
 class ChessGame:
     def __init__(self):
@@ -125,13 +133,14 @@ class ChessGame:
             "stockfish"
         ]
 
-        # Skill Level dùng riêng cho nước đi CỦA AI đối thủ (độ khó người dùng chọn).
-        # Việc ĐÁNH GIÁ nước đi (evaluation/classification) luôn dùng full-strength
-        # (20) bất kể độ khó AI, để không bỏ sót đòn phản công/chiến thuật sâu
-        # sau các nước hy sinh - nếu không, engine bị làm yếu đi (Skill Level)
-        # sẽ vừa chơi kém vừa ĐÁNH GIÁ kém, gây phân loại sai (vd: thí hậu tồi
-        # bị chấm "brilliant" vì engine yếu không thấy được đòn bắt lại).
-        self.opponent_skill_level = 18
+        # Độ mạnh AI ĐỐI THỦ, tính theo ELO thật (UCI_Elo) thay vì Skill Level
+        # nội bộ (0-20, không map ra ELO thực). Việc ĐÁNH GIÁ nước đi
+        # (evaluation/classification) luôn dùng full-strength (Skill 20) bất kể
+        # độ khó AI, để không bỏ sót đòn phản công/chiến thuật sâu sau các nước
+        # hy sinh - nếu không, engine bị làm yếu đi sẽ vừa chơi kém vừa ĐÁNH GIÁ
+        # kém, gây phân loại sai (vd: thí hậu tồi bị chấm "brilliant" vì engine
+        # yếu không thấy được đòn bắt lại).
+        self.opponent_elo = 1600
         FULL_STRENGTH_SKILL = 20
 
         for path in stockfish_paths:
@@ -210,7 +219,7 @@ class ChessGame:
 
             # Use MoveClassifier for evaluation
             classifier = MoveClassifier()
-            move_class = classifier.classify(
+            result = classifier.classify(
                 board_before,
                 move,
                 top_moves_before,
@@ -218,6 +227,7 @@ class ChessGame:
                 eval_after if eval_after is not None else 0,
                 len(self.move_history) - 1
             )
+            move_class = result['classification']
 
             self.evaluation_history.append({
                 'move': move_uci,
@@ -225,7 +235,9 @@ class ChessGame:
                 'eval_before': eval_before,
                 'eval_after': eval_after,
                 'fen_before': fen_before,
-                'classification': move_class
+                'classification': move_class,
+                'cp_loss': result['cp_loss'],
+                'mover_white': board_before.turn
             })
 
             return True
@@ -294,14 +306,38 @@ class ChessGame:
             return None
 
     def get_best_move(self, time_ms=1000):
-        """Nước đi của AI ĐỐI THỦ - dùng đúng độ khó người dùng chọn (có thể yếu hơn)."""
+        """Nước đi của AI ĐỐI THỦ - dùng đúng ELO người dùng chọn.
+
+        Với ELO thấp hơn sàn mà Stockfish hỗ trợ (ENGINE_MIN_ELO), bản thân
+        engine không thể yếu hơn nữa chỉ bằng UCI_Elo, nên ta giả lập thêm
+        bằng cách thỉnh thoảng chọn đại 1 nước hợp lệ ngẫu nhiên thay vì nước
+        do engine đề xuất - xác suất tăng dần khi ELO mục tiêu càng thấp."""
         if not self.stockfish_available:
             return None
 
         try:
-            self.stockfish.set_skill_level(self.opponent_skill_level)
+            target_elo = max(ENGINE_MIN_ELO, min(ENGINE_MAX_ELO, self.opponent_elo))
+            try:
+                self.stockfish.set_elo_rating(target_elo)
+            except Exception:
+                # Bản Stockfish cũ không hỗ trợ UCI_Elo -> quy đổi tạm sang Skill Level
+                approx_skill = round((target_elo - ENGINE_MIN_ELO) / (ENGINE_MAX_ELO - ENGINE_MIN_ELO) * 20)
+                self.stockfish.set_skill_level(max(0, min(20, approx_skill)))
+
             self.stockfish.set_fen_position(self.board.fen())
             best_move = self.stockfish.get_best_move_time(time_ms)
+
+            if not best_move:
+                return None
+
+            # Giả lập yếu hơn sàn ELO của engine bằng random hóa nước đi
+            if self.opponent_elo < ENGINE_MIN_ELO:
+                random_chance = min(0.7, (ENGINE_MIN_ELO - self.opponent_elo) / 1000)
+                if random.random() < random_chance:
+                    legal_moves = list(self.board.legal_moves)
+                    if legal_moves:
+                        best_move = random.choice(legal_moves).uci()
+
             return best_move
         except:
             return None
@@ -359,6 +395,55 @@ class ChessGame:
     def get_pgn_string(self):
         return str(self.game_pgn)
 
+    def get_accuracy_stats(self):
+        """Tính % chính xác và ước tính ELO cho mỗi bên dựa trên cp_loss trung
+        bình (ACPL) của các nước đã đi trong ván. Công thức accuracy dùng
+        xấp xỉ dạng hàm mũ phổ biến (kiểu Lichess/chess.com), không phải công
+        thức chính xác tuyệt đối của các nền tảng đó - chỉ mang tính tham khảo.
+        Trả về dict: {'white': {...}, 'black': {...}} hoặc None nếu chưa đủ dữ liệu."""
+        white_losses = [h['cp_loss'] for h in self.evaluation_history
+                         if h.get('mover_white') is True and h.get('cp_loss') is not None]
+        black_losses = [h['cp_loss'] for h in self.evaluation_history
+                         if h.get('mover_white') is False and h.get('cp_loss') is not None]
+
+        def stats_for(losses):
+            if not losses:
+                return None
+            acpl = sum(losses) / len(losses)
+            accuracy = 103.1668 * math.exp(-0.04354 * (acpl / 100)) - 3.1668
+            accuracy = max(0.0, min(100.0, accuracy))
+            return {
+                'acpl': round(acpl, 1),
+                'accuracy': round(accuracy, 1),
+                'estimated_elo': self._accuracy_to_elo(accuracy)
+            }
+
+        white_stats = stats_for(white_losses)
+        black_stats = stats_for(black_losses)
+        if white_stats is None and black_stats is None:
+            return None
+        return {'white': white_stats, 'black': black_stats}
+
+    @staticmethod
+    def _accuracy_to_elo(accuracy):
+        """Nội suy tuyến tính ELO ước tính từ % chính xác, dựa trên các mốc
+        tham khảo gần đúng (KHÔNG phải công thức chính thức của bất kỳ nền
+        tảng nào - chỉ để người chơi có một con số ước lượng vui)."""
+        anchors = [
+            (40, 400), (55, 700), (65, 1000), (75, 1300),
+            (83, 1600), (89, 1900), (94, 2200), (97, 2500),
+            (99, 2800), (100, 3200),
+        ]
+        if accuracy <= anchors[0][0]:
+            return anchors[0][1]
+        if accuracy >= anchors[-1][0]:
+            return anchors[-1][1]
+        for (acc_lo, elo_lo), (acc_hi, elo_hi) in zip(anchors, anchors[1:]):
+            if acc_lo <= accuracy <= acc_hi:
+                t = (accuracy - acc_lo) / (acc_hi - acc_lo)
+                return round(elo_lo + t * (elo_hi - elo_lo))
+        return anchors[-1][1]
+
     def analyze_position(self, depth=15):
         if not self.stockfish_available:
             return None
@@ -373,7 +458,7 @@ class ChessGame:
             return None
 
 class MultiEngineGame:
-    def __init__(self, engine1_skill=18, engine2_skill=15):
+    def __init__(self, engine1_elo=1600, engine2_elo=1300):
         self.board = chess.Board()
 
         # Try multiple paths to find Stockfish
@@ -405,8 +490,17 @@ class MultiEngineGame:
             self.stockfish1 = Stockfish(parameters=engine_params)
             self.stockfish2 = Stockfish(parameters=engine_params)
 
-        self.stockfish1.set_skill_level(engine1_skill)
-        self.stockfish2.set_skill_level(engine2_skill)
+        for engine, elo in ((self.stockfish1, engine1_elo), (self.stockfish2, engine2_elo)):
+            clamped_elo = max(ENGINE_MIN_ELO, min(ENGINE_MAX_ELO, elo))
+            try:
+                engine.set_elo_rating(clamped_elo)
+            except Exception:
+                approx_skill = round((clamped_elo - ENGINE_MIN_ELO) / (ENGINE_MAX_ELO - ENGINE_MIN_ELO) * 20)
+                engine.set_skill_level(max(0, min(20, approx_skill)))
+
+        # ELO thấp hơn sàn engine -> giả lập yếu hơn bằng random hóa nước đi
+        self.engine1_random_chance = min(0.7, max(0, (ENGINE_MIN_ELO - engine1_elo) / 1000))
+        self.engine2_random_chance = min(0.7, max(0, (ENGINE_MIN_ELO - engine2_elo) / 1000))
 
         self.moves = []
 
@@ -418,9 +512,16 @@ class MultiEngineGame:
             if self.board.turn:
                 self.stockfish1.set_fen_position(self.board.fen())
                 best_move = self.stockfish1.get_best_move_time(1000)
+                random_chance = self.engine1_random_chance
             else:
                 self.stockfish2.set_fen_position(self.board.fen())
                 best_move = self.stockfish2.get_best_move_time(1000)
+                random_chance = self.engine2_random_chance
+
+            if best_move and random_chance > 0 and random.random() < random_chance:
+                legal_moves = list(self.board.legal_moves)
+                if legal_moves:
+                    best_move = random.choice(legal_moves).uci()
 
             if best_move:
                 move = chess.Move.from_uci(best_move)
