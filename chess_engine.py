@@ -42,10 +42,17 @@ class MoveClassifier:
     def classify(self, board_before, move, top_moves_before, eval_before_cp, eval_after_cp, ply_index=0):
         best_cp = top_moves_before[0]["score_cp"] if top_moves_before else eval_before_cp
         second_cp = top_moves_before[1]["score_cp"] if len(top_moves_before) > 1 else best_cp - 400
-        is_top_choice = bool(top_moves_before) and top_moves_before[0]["move"] == move
+        is_top_choice = bool(top_moves_before) and top_moves_before[0]["move"] == move.uci()
 
-        cp_loss = max(0, best_cp - eval_after_cp)
-        cp_gain = max(0, eval_after_cp - best_cp)
+        # Adjust perspective for Black (negate values so positive = good for moving player)
+        perspective = 1 if board_before.turn else -1
+        best_cp_adjusted = best_cp * perspective
+        eval_before_adjusted = eval_before_cp * perspective
+        eval_after_adjusted = eval_after_cp * perspective
+        second_cp_adjusted = second_cp * perspective
+
+        cp_loss = max(0, best_cp_adjusted - eval_after_adjusted)
+        cp_gain = max(0, eval_after_adjusted - best_cp_adjusted)
 
         mover_color = board_before.turn
         board_after = board_before.copy(stack=False)
@@ -67,10 +74,10 @@ class MoveClassifier:
             return "brilliant"
         if material_gain and cp_loss <= 100:
             return "brilliant"
-        if sacrifice and is_top_choice and cp_loss <= 50 and (best_cp - second_cp) >= 300:
+        if sacrifice and is_top_choice and cp_loss <= 50 and (best_cp_adjusted - second_cp_adjusted) >= 300:
             return "brilliant"
 
-        if is_top_choice and (best_cp - second_cp) >= 200 and eval_before_cp <= 100:
+        if is_top_choice and (best_cp_adjusted - second_cp_adjusted) >= 200 and abs(eval_before_adjusted) <= 100:
             return "great"
 
         if is_top_choice or cp_loss <= 15:
@@ -81,9 +88,7 @@ class MoveClassifier:
             return "inaccuracy"
         if cp_loss <= 350:
             return "mistake"
-        # Blunder: chỉ khi mất quá nhiều (>4.5 pawn) - hiếm hơn
-        if cp_loss <= 450:
-            return "mistake"
+        # Blunder: chỉ khi mất quá nhiều (>3.5 pawn)
         return "blunder"
 
 class ChessGame:
@@ -236,66 +241,38 @@ class ChessGame:
 
         try:
             self.stockfish.set_fen_position(self.board.fen())
-            current_eval = self.stockfish.get_evaluation()
-            current_cp = 0
-
-            if current_eval:
-                if current_eval['type'] == 'cp':
-                    current_cp = current_eval['value']
-                elif current_eval['type'] == 'mate':
-                    current_cp = 10000 if current_eval['value'] > 0 else -10000
-
-            # Get best move
-            best_move_uci = self.stockfish.get_best_move_time(500)
-
             top_moves = []
-            if best_move_uci:
-                # Evaluate position AFTER best move
+
+            # Generate all legal moves
+            legal_moves = list(self.board.legal_moves)
+            if not legal_moves:
+                return []
+
+            # Evaluate each move properly
+            move_scores = []
+            for move in legal_moves:
                 temp_board = self.board.copy()
-                temp_board.push(chess.Move.from_uci(best_move_uci))
+                temp_board.push(move)
                 self.stockfish.set_fen_position(temp_board.fen())
-                best_eval = self.stockfish.get_evaluation()
+                eval_val = self.stockfish.get_evaluation()
 
-                best_score_cp = current_cp
-                if best_eval:
-                    if best_eval['type'] == 'cp':
-                        best_score_cp = best_eval['value']
-                    elif best_eval['type'] == 'mate':
-                        best_score_cp = 10000 if best_eval['value'] > 0 else -10000
+                score_cp = 0
+                if eval_val:
+                    if eval_val['type'] == 'cp':
+                        score_cp = eval_val['value']
+                    elif eval_val['type'] == 'mate':
+                        score_cp = 10000 if eval_val['value'] > 0 else -10000
 
-                top_moves.append({
-                    'move': best_move_uci,
-                    'score_cp': best_score_cp
+                move_scores.append({
+                    'move': move.uci(),
+                    'score_cp': score_cp
                 })
 
-            # Add remaining top moves if needed
-            for move in list(self.board.legal_moves)[:count-1]:
-                move_uci = move.uci()
-                if move_uci != best_move_uci:
-                    # Evaluate each subsequent move
-                    temp_board = self.board.copy()
-                    temp_board.push(move)
-                    self.stockfish.set_fen_position(temp_board.fen())
-                    eval_val = self.stockfish.get_evaluation()
+            # Sort by score (best first)
+            move_scores.sort(key=lambda x: x['score_cp'], reverse=True)
 
-                    score_cp = current_cp - 50  # Slightly worse than best
-                    if eval_val:
-                        if eval_val['type'] == 'cp':
-                            score_cp = eval_val['value']
-                        elif eval_val['type'] == 'mate':
-                            score_cp = 10000 if eval_val['value'] > 0 else -10000
-
-                    top_moves.append({
-                        'move': move_uci,
-                        'score_cp': score_cp
-                    })
-
-                    if len(top_moves) >= count:
-                        break
-
-            # Sort by score descending
-            top_moves.sort(key=lambda x: x['score_cp'], reverse=True)
-            return top_moves[:count]
+            # Return top N moves
+            return move_scores[:count]
         except:
             return []
 
