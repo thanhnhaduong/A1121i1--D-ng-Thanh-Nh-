@@ -140,6 +140,45 @@ class ChessGame:
 
         if not self.stockfish_available:
             print(f"⚠️ Stockfish not found. Tried paths: {stockfish_paths}")
+        else:
+            self._detect_eval_convention()
+
+    def _detect_eval_convention(self):
+        """Thư viện stockfish có thể trả điểm LUÔN theo góc Trắng, hoặc theo góc
+        BÊN ĐANG ĐI (turn-relative) tùy phiên bản cài đặt. Kiểm tra thực nghiệm
+        bằng 1 thế cờ Trắng thắng rõ ràng (thừa hậu), thử cả 2 trường hợp
+        "tới lượt Trắng" và "tới lượt Đen" để xác định đúng quy ước, thay vì
+        đoán mò (nguồn gốc gây sai lệch đánh giá Trắng/Đen trước đây)."""
+        self.eval_turn_relative = False
+        try:
+            fen_white_to_move = "4k3/8/8/8/8/8/8/Q3K3 w - - 0 1"
+            fen_black_to_move = "4k3/8/8/8/8/8/8/Q3K3 b - - 0 1"
+
+            self.stockfish.set_fen_position(fen_white_to_move)
+            eval_w = self.stockfish.get_evaluation()
+            self.stockfish.set_fen_position(fen_black_to_move)
+            eval_b = self.stockfish.get_evaluation()
+
+            val_w = eval_w['value'] if eval_w and eval_w.get('type') == 'cp' else 0
+            val_b = eval_b['value'] if eval_b and eval_b.get('type') == 'cp' else 0
+
+            # Trắng luôn thắng thế ở cả 2 FEN trên. Nếu quy ước "luôn theo góc
+            # Trắng" thì cả 2 giá trị đều dương. Nếu "theo bên đang đi" thì giá
+            # trị khi Đen đi sẽ âm (bất lợi cho Đen).
+            self.eval_turn_relative = (val_w > 0) and (val_b < 0)
+            print(f"ℹ️ Quy ước điểm Stockfish: {'theo bên đang đi' if self.eval_turn_relative else 'luôn theo góc Trắng'}")
+
+            # Khôi phục vị trí ván đấu hiện tại
+            self.stockfish.set_fen_position(self.board.fen())
+        except Exception as e:
+            self.eval_turn_relative = False
+
+    def _to_white_perspective(self, raw_value, side_to_move_is_white):
+        """Chuẩn hóa điểm số thô từ Stockfish về góc nhìn CỐ ĐỊNH của Trắng
+        (dương = có lợi cho Trắng), bất kể thư viện dùng quy ước nào."""
+        if self.eval_turn_relative and not side_to_move_is_white:
+            return -raw_value
+        return raw_value
 
     def make_move(self, move_uci):
         try:
@@ -231,12 +270,14 @@ class ChessGame:
         try:
             self.stockfish.set_fen_position(self.board.fen())
             eval_value = self.stockfish.get_evaluation()
+            side_white = self.board.turn
 
             if eval_value['type'] == 'cp':
-                return eval_value['value']
+                return self._to_white_perspective(eval_value['value'], side_white)
             elif eval_value['type'] == 'mate':
                 mate_in = eval_value['value']
-                return 10000 if mate_in > 0 else -10000
+                raw = 10000 if mate_in > 0 else -10000
+                return self._to_white_perspective(raw, side_white)
 
             return None
         except:
@@ -271,13 +312,15 @@ class ChessGame:
             temp_board.push(chess.Move.from_uci(best_move_uci))
             self.stockfish.set_fen_position(temp_board.fen())
             eval_val = self.stockfish.get_evaluation()
+            side_white = temp_board.turn
 
             best_score_cp = 0
             if eval_val:
                 if eval_val['type'] == 'cp':
-                    best_score_cp = eval_val['value']
+                    best_score_cp = self._to_white_perspective(eval_val['value'], side_white)
                 elif eval_val['type'] == 'mate':
-                    best_score_cp = 10000 if eval_val['value'] > 0 else -10000
+                    raw = 10000 if eval_val['value'] > 0 else -10000
+                    best_score_cp = self._to_white_perspective(raw, side_white)
 
             return [{'move': best_move_uci, 'score_cp': best_score_cp}]
         except:

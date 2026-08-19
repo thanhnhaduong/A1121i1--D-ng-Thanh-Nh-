@@ -1039,7 +1039,7 @@ class ChessGUI:
             # Get best move
             self.game.stockfish.set_fen_position(self.game.board.fen())
             best_move = self.game.stockfish.get_best_move_time(3000)
-            eval_val = self.game.stockfish.get_evaluation()
+            eval_val_normalized = self.game.get_evaluation()  # đã chuẩn hóa theo góc Trắng
 
             if not best_move:
                 messagebox.showwarning("Lỗi", "Không thể tính toán nước đi")
@@ -1052,9 +1052,8 @@ class ChessGUI:
             # Display suggestion with highlight
             msg = f"💡 Nước Gợi Ý: {move_san} ({best_move})\n\n"
 
-            if eval_val:
-                eval_val_float = eval_val['value'] / 100 if eval_val['type'] == 'cp' else eval_val['value']
-                msg += f"📊 Đánh Giá: {eval_val_float:+.2f}\n\n"
+            if eval_val_normalized is not None:
+                msg += f"📊 Đánh Giá: {eval_val_normalized/100:+.2f}\n\n"
 
             msg += "Nước này là tốt nhất theo Stockfish.\n"
             msg += "Bạn có muốn áp dụng nước này không?"
