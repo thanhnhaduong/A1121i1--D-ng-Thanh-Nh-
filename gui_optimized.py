@@ -246,7 +246,10 @@ class ChessGUI:
                 self.selected_square = square
                 self.highlight_moves(square)
         else:
-            move = chess.Move(self.selected_square, square)
+            promotion_piece = None
+            if self._is_promotion_move(self.game.board, self.selected_square, square):
+                promotion_piece = self._ask_promotion_piece()
+            move = chess.Move(self.selected_square, square, promotion=promotion_piece)
             if move in self.game.board.legal_moves:
                 self.game.make_move(move.uci())
                 self.selected_square = None
@@ -289,6 +292,54 @@ class ChessGUI:
 
         self.canvas.create_line(from_center_x, from_center_y, to_center_x, to_center_y,
                                fill='#FFFF00', width=3, arrow=tk.LAST)
+
+    def _is_promotion_move(self, board, from_square, to_square):
+        """Kiểm tra xem đây có phải nước tốt phong cấp hợp lệ không (bất kỳ
+        quân phong cấp nào), để quyết định có cần hỏi người chơi hay không."""
+        piece = board.piece_at(from_square)
+        if not piece or piece.piece_type != chess.PAWN:
+            return False
+        to_rank = chess.square_rank(to_square)
+        if not ((piece.color == chess.WHITE and to_rank == 7) or
+                (piece.color == chess.BLACK and to_rank == 0)):
+            return False
+        return any(chess.Move(from_square, to_square, promotion=p) in board.legal_moves
+                   for p in (chess.QUEEN, chess.ROOK, chess.BISHOP, chess.KNIGHT))
+
+    def _ask_promotion_piece(self):
+        """Hiện dialog chọn quân phong cấp (Hậu/Xe/Tượng/Mã), trả về loại quân."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Phong Cấp")
+        dialog.geometry("300x120")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        dialog.resizable(False, False)
+
+        result = {'piece': chess.QUEEN}
+
+        tk.Label(dialog, text="Chọn quân phong cấp:", font=("Arial", 10, "bold")).pack(pady=(10, 5))
+
+        btn_frame = tk.Frame(dialog)
+        btn_frame.pack()
+
+        pieces = [
+            ('♕', chess.QUEEN, 'Hậu'),
+            ('♖', chess.ROOK, 'Xe'),
+            ('♗', chess.BISHOP, 'Tượng'),
+            ('♘', chess.KNIGHT, 'Mã'),
+        ]
+
+        def choose(piece_type):
+            result['piece'] = piece_type
+            dialog.destroy()
+
+        for symbol, piece_type, name in pieces:
+            tk.Button(btn_frame, text=f"{symbol}\n{name}", command=lambda p=piece_type: choose(p),
+                     font=("Arial", 14), width=4, height=2).pack(side=tk.LEFT, padx=4, pady=5)
+
+        dialog.protocol("WM_DELETE_WINDOW", lambda: choose(chess.QUEEN))
+        self.root.wait_window(dialog)
+        return result['piece']
 
     def highlight_moves(self, square):
         self.draw_board()
@@ -1242,7 +1293,10 @@ class ChessGUI:
                             y = to_row * sq_size + sq_size // 2
                             puzzle_canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill='lime')
             else:
-                move = chess.Move(selected_sq[0], square)
+                promotion_piece = None
+                if self._is_promotion_move(board, selected_sq[0], square):
+                    promotion_piece = self._ask_promotion_piece()
+                move = chess.Move(selected_sq[0], square, promotion=promotion_piece)
                 if move in board.legal_moves:
                     puzzle_name = puzzle_var.get()
                     best_move_str = puzzles[puzzle_name]['best_move']
