@@ -254,6 +254,35 @@ class ChessGUI:
                 self.selected_square = None
                 self.draw_board()
 
+    def highlight_best_move(self, move):
+        """Bôi vàng nước đi tốt nhất"""
+        self.draw_board()
+
+        from_row, from_col = move.from_square // 8, move.from_square % 8
+        to_row, to_col = move.to_square // 8, move.to_square % 8
+
+        disp_from_row, disp_from_col = self.get_display_coords(from_row, from_col)
+        disp_to_row, disp_to_col = self.get_display_coords(to_row, to_col)
+
+        # Highlight from square (nguồn)
+        x1, y1 = disp_from_col * self.square_size, disp_from_row * self.square_size
+        x2, y2 = x1 + self.square_size, y1 + self.square_size
+        self.canvas.create_rectangle(x1, y1, x2, y2, outline='#FFFF00', width=4)
+
+        # Highlight to square (đích)
+        x1, y1 = disp_to_col * self.square_size, disp_to_row * self.square_size
+        x2, y2 = x1 + self.square_size, y1 + self.square_size
+        self.canvas.create_rectangle(x1, y1, x2, y2, outline='#FFFF00', width=4)
+
+        # Draw arrow from-to
+        from_center_x = disp_from_col * self.square_size + self.square_size // 2
+        from_center_y = disp_from_row * self.square_size + self.square_size // 2
+        to_center_x = disp_to_col * self.square_size + self.square_size // 2
+        to_center_y = disp_to_row * self.square_size + self.square_size // 2
+
+        self.canvas.create_line(from_center_x, from_center_y, to_center_x, to_center_y,
+                               fill='#FFFF00', width=3, arrow=tk.LAST)
+
     def highlight_moves(self, square):
         self.draw_board()
 
@@ -1020,7 +1049,7 @@ class ChessGUI:
             move = chess.Move.from_uci(best_move)
             move_san = self.game.board.san(move)
 
-            # Display suggestion
+            # Display suggestion with highlight
             msg = f"💡 Nước Gợi Ý: {move_san} ({best_move})\n\n"
 
             if eval_val:
@@ -1029,6 +1058,9 @@ class ChessGUI:
 
             msg += "Nước này là tốt nhất theo Stockfish.\n"
             msg += "Bạn có muốn áp dụng nước này không?"
+
+            # Highlight best move on board
+            self.highlight_best_move(move)
 
             if messagebox.askyesno("Gợi Ý Nước Đi", msg):
                 # Apply the suggested move
@@ -1042,6 +1074,8 @@ class ChessGUI:
                         self.root.after(1000, self.ai_move)
                 else:
                     messagebox.showerror("Lỗi", "Không thể thực hiện nước đi")
+            else:
+                self.draw_board()
 
         except Exception as e:
             messagebox.showerror("Lỗi", f"Lỗi: {str(e)}")

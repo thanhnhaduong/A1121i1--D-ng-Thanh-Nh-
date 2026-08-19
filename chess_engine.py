@@ -81,7 +81,9 @@ class MoveClassifier:
             return "inaccuracy"
         if cp_loss <= 350:
             return "mistake"
-        # Blunder: chỉ khi mất quá nhiều (>3.5 pawn)
+        # Blunder: chỉ khi mất quá nhiều (>4.5 pawn) - hiếm hơn
+        if cp_loss <= 450:
+            return "mistake"
         return "blunder"
 
 class ChessGame:
