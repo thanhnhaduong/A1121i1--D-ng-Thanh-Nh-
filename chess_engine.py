@@ -228,27 +228,49 @@ class ChessGame:
 
         try:
             self.stockfish.set_fen_position(self.board.fen())
+            current_eval = self.stockfish.get_evaluation()
+            current_cp = 0
+
+            if current_eval:
+                if current_eval['type'] == 'cp':
+                    current_cp = current_eval['value']
+                elif current_eval['type'] == 'mate':
+                    current_cp = 10000 if current_eval['value'] > 0 else -10000
+
+            # Get best move
+            best_move_uci = self.stockfish.get_best_move_time(500)
+
             top_moves = []
-            for move in list(self.board.legal_moves)[:count]:
-                self.stockfish.set_fen_position(self.board.fen())
-                move_uci = move.uci()
-                # Make temporary move to evaluate
-                temp_board = self.board.copy()
-                temp_board.push(move)
-                self.stockfish.set_fen_position(temp_board.fen())
-                eval_after = self.stockfish.get_evaluation()
-
-                score_cp = 0
-                if eval_after:
-                    if eval_after['type'] == 'cp':
-                        score_cp = eval_after['value']
-                    elif eval_after['type'] == 'mate':
-                        score_cp = 10000 if eval_after['value'] > 0 else -10000
-
+            if best_move_uci:
                 top_moves.append({
-                    'move': move_uci,
-                    'score_cp': score_cp
+                    'move': best_move_uci,
+                    'score_cp': current_cp
                 })
+
+            # Add remaining top moves if needed
+            for move in list(self.board.legal_moves)[:count-1]:
+                move_uci = move.uci()
+                if move_uci != best_move_uci:
+                    # Evaluate each subsequent move
+                    temp_board = self.board.copy()
+                    temp_board.push(move)
+                    self.stockfish.set_fen_position(temp_board.fen())
+                    eval_val = self.stockfish.get_evaluation()
+
+                    score_cp = current_cp - 50  # Slightly worse than best
+                    if eval_val:
+                        if eval_val['type'] == 'cp':
+                            score_cp = eval_val['value']
+                        elif eval_val['type'] == 'mate':
+                            score_cp = 10000 if eval_val['value'] > 0 else -10000
+
+                    top_moves.append({
+                        'move': move_uci,
+                        'score_cp': score_cp
+                    })
+
+                    if len(top_moves) >= count:
+                        break
 
             # Sort by score descending
             top_moves.sort(key=lambda x: x['score_cp'], reverse=True)
