@@ -47,7 +47,7 @@ class MoveClassifier:
 
     def classify(self, board_before, move, top_moves_before, eval_before_cp, eval_after_cp, ply_index=0):
         best_cp = top_moves_before[0]["score_cp"] if top_moves_before else eval_before_cp
-        second_cp = top_moves_before[1]["score_cp"] if len(top_moves_before) > 1 else best_cp - 400
+        has_second_move = len(top_moves_before) > 1
         is_top_choice = bool(top_moves_before) and top_moves_before[0]["move"] == move.uci()
 
         # Adjust perspective for Black (negate values so positive = good for moving player)
@@ -55,10 +55,19 @@ class MoveClassifier:
         best_cp_adjusted = best_cp * perspective
         eval_before_adjusted = eval_before_cp * perspective
         eval_after_adjusted = eval_after_cp * perspective
-        second_cp_adjusted = second_cp * perspective
 
         cp_loss = max(0, best_cp_adjusted - eval_after_adjusted)
         cp_gain = max(0, eval_after_adjusted - best_cp_adjusted)
+
+        # Khoảng cách best/2nd-best chỉ tính khi có dữ liệu nước nhì thực sự.
+        # Không có dữ liệu -> gap = 0, tránh kích hoạt "great"/"brilliant" sai lệch
+        # (trước đây dùng giá trị giả định best_cp-400, nhưng sau khi nhân perspective
+        # nó luôn đúng cho Trắng và luôn sai cho Đen một cách hệ thống).
+        if has_second_move:
+            second_cp = top_moves_before[1]["score_cp"]
+            gap = best_cp_adjusted - (second_cp * perspective)
+        else:
+            gap = 0
 
         mover_color = board_before.turn
         board_after = board_before.copy(stack=False)
@@ -80,10 +89,10 @@ class MoveClassifier:
             return "brilliant"
         if material_gain and cp_loss <= 100:
             return "brilliant"
-        if sacrifice and is_top_choice and cp_loss <= 50 and (best_cp_adjusted - second_cp_adjusted) >= 300:
+        if sacrifice and is_top_choice and cp_loss <= 50 and gap >= 300:
             return "brilliant"
 
-        if is_top_choice and (best_cp_adjusted - second_cp_adjusted) >= 200 and abs(eval_before_adjusted) <= 100:
+        if is_top_choice and gap >= 200 and abs(eval_before_adjusted) <= 100:
             return "great"
 
         if is_top_choice or cp_loss <= 15:
