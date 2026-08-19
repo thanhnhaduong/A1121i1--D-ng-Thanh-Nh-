@@ -926,11 +926,10 @@ class ChessGUI:
                                                  fill=class_color, outline='')
 
                 # Calculate cp_change for centipawn mode
+                # cp_change = eval_before - eval_after (positive = good move for whoever just moved)
                 cp_change = 0
                 if eval_before is not None and eval_after is not None:
-                    cp_change = eval_after - eval_before
-                    if len(self.game.move_history) % 2 == 0:
-                        cp_change = -cp_change
+                    cp_change = eval_before - eval_after
 
                 cp_pawn = cp_change / 100.0
 
