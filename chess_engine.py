@@ -164,27 +164,39 @@ class ChessGame:
     def _detect_eval_convention(self):
         """Thư viện stockfish có thể trả điểm LUÔN theo góc Trắng, hoặc theo góc
         BÊN ĐANG ĐI (turn-relative) tùy phiên bản cài đặt. Kiểm tra thực nghiệm
-        bằng 1 thế cờ Trắng thắng rõ ràng (thừa hậu), thử cả 2 trường hợp
-        "tới lượt Trắng" và "tới lượt Đen" để xác định đúng quy ước, thay vì
-        đoán mò (nguồn gốc gây sai lệch đánh giá Trắng/Đen trước đây)."""
+        bằng 1 thế cờ Trắng hơn quân rõ ràng (thừa 1 mã) NHƯNG vẫn đầy đủ quân/tốt
+        để KHÔNG bị chiếu hết ép buộc (thế Hậu đơn KQ vs K trước đây bị Stockfish
+        trả về 'mate' thay vì 'cp', khiến bài test luôn mặc định sai một cách hệ
+        thống - đây chính là nguyên nhân Trắng bị đánh giá sai còn Đen thì đúng).
+        Thử cả 2 trường hợp "tới lượt Trắng" và "tới lượt Đen" để xác định đúng
+        quy ước, thay vì đoán mò."""
         self.eval_turn_relative = False
         try:
-            fen_white_to_move = "4k3/8/8/8/8/8/8/Q3K3 w - - 0 1"
-            fen_black_to_move = "4k3/8/8/8/8/8/8/Q3K3 b - - 0 1"
+            # Trắng hơn 1 mã (thiếu mã b8 của Đen), đầy đủ tốt + quân khác
+            # -> không có chiếu hết ép buộc, Stockfish chắc chắn trả về type 'cp'.
+            fen_white_to_move = "r1bqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+            fen_black_to_move = "r1bqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"
+
+            def signed_value(eval_result):
+                if not eval_result:
+                    return 0
+                if eval_result.get('type') == 'cp':
+                    return eval_result['value']
+                if eval_result.get('type') == 'mate':
+                    # Phòng hờ nếu vẫn ra mate: giữ đúng dấu thay vì bỏ qua
+                    return 10000 if eval_result['value'] > 0 else -10000
+                return 0
 
             self.stockfish.set_fen_position(fen_white_to_move)
-            eval_w = self.stockfish.get_evaluation()
+            val_w = signed_value(self.stockfish.get_evaluation())
             self.stockfish.set_fen_position(fen_black_to_move)
-            eval_b = self.stockfish.get_evaluation()
+            val_b = signed_value(self.stockfish.get_evaluation())
 
-            val_w = eval_w['value'] if eval_w and eval_w.get('type') == 'cp' else 0
-            val_b = eval_b['value'] if eval_b and eval_b.get('type') == 'cp' else 0
-
-            # Trắng luôn thắng thế ở cả 2 FEN trên. Nếu quy ước "luôn theo góc
+            # Trắng luôn hơn quân ở cả 2 FEN trên. Nếu quy ước "luôn theo góc
             # Trắng" thì cả 2 giá trị đều dương. Nếu "theo bên đang đi" thì giá
             # trị khi Đen đi sẽ âm (bất lợi cho Đen).
             self.eval_turn_relative = (val_w > 0) and (val_b < 0)
-            print(f"ℹ️ Quy ước điểm Stockfish: {'theo bên đang đi' if self.eval_turn_relative else 'luôn theo góc Trắng'}")
+            print(f"ℹ️ Quy ước điểm Stockfish: {'theo bên đang đi' if self.eval_turn_relative else 'luôn theo góc Trắng'} (test: w={val_w}, b={val_b})")
 
             # Khôi phục vị trí ván đấu hiện tại
             self.stockfish.set_fen_position(self.board.fen())
