@@ -9,6 +9,17 @@ from stockfish import Stockfish
 from enum import Enum
 from datetime import datetime
 
+CLASS_STYLE = {
+    "book":        ("Khai cuoc",     "📚", "Nước di chuan trong sach khai cuoc."),
+    "brilliant":   ("Xuat sac",      "⭐", "Nước hy sinh, tan cong cuc ky thong minh."),
+    "great":       ("Tuyet voi",     "🟢", "Nước di duy nhat va quan trong."),
+    "best":        ("Tot nhat",      "✓", "Nước di toi uu theo Stockfish."),
+    "good":        ("Kha",           "✓", "Nước di hop ly, an toan."),
+    "inaccuracy":  ("Diem yeu nhe",  "❓", "Nước di hoi kem."),
+    "mistake":     ("Sai lam",       "⚠️", "Nước di gay mat loi the."),
+    "blunder":     ("Thao hoa",      "❌", "Sai lam tram trong."),
+}
+
 class MoveEvaluation(Enum):
     BLUNDER = ("💥 Blunder", "< -3.00", "Nước đi tàn tệ, mất lợi thế lớn")
     MISTAKE = ("❌ Mistake", "-1.00 to -3.00", "Sai lầm đáng kể, mất lợi thế")
@@ -16,6 +27,56 @@ class MoveEvaluation(Enum):
     GOOD = ("👍 Good", "-0.25 to +0.25", "Nước đi tốt, bình thường")
     EXCELLENT = ("✓ Excellent", "+1.00 to +3.00", "Nước đi xuất sắc, tăng lợi thế")
     BRILLIANT = ("✨ Brilliant", "> +3.00", "Nước đi tuyệt vời, chuyển bất lợi thành lợi")
+
+def material_count(board, color):
+    """Tính tổng giá trị quân cờ"""
+    piece_values = {chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3, chess.ROOK: 5, chess.QUEEN: 9}
+    total = 0
+    for pt, val in piece_values.items():
+        total += val * len(board.pieces(pt, color))
+    return total
+
+class MoveClassifier:
+    """Phân loại nước đi dựa trên cp_loss (best_cp - eval_after)"""
+
+    def classify(self, board_before, move, top_moves_before, eval_before_cp, eval_after_cp, ply_index=0):
+        best_cp = top_moves_before[0]["score_cp"] if top_moves_before else eval_before_cp
+        second_cp = top_moves_before[1]["score_cp"] if len(top_moves_before) > 1 else best_cp - 400
+        is_top_choice = bool(top_moves_before) and top_moves_before[0]["move"] == move
+
+        cp_loss = max(0, best_cp - eval_after_cp)
+
+        mover_color = board_before.turn
+        board_after = board_before.copy(stack=False)
+        board_after.push(move)
+
+        mat_before = material_count(board_before, mover_color) - material_count(board_before, not mover_color)
+        mat_after = material_count(board_after, mover_color) - material_count(board_after, not mover_color)
+        sacrifice = (mat_after - mat_before) <= -2
+
+        is_mate = board_after.is_checkmate()
+
+        # Phân loại logic
+        if is_mate:
+            return "brilliant" if sacrifice else "best"
+
+        if sacrifice and cp_loss <= 40 and eval_after_cp >= -50:
+            return "brilliant"
+        if sacrifice and is_top_choice and cp_loss <= 20 and (best_cp - second_cp) >= 150:
+            return "brilliant"
+
+        if is_top_choice and (best_cp - second_cp) >= 200 and eval_before_cp <= 100:
+            return "great"
+
+        if is_top_choice or cp_loss <= 10:
+            return "best"
+        if cp_loss <= 50:
+            return "good"
+        if cp_loss <= 120:
+            return "inaccuracy"
+        if cp_loss <= 250:
+            return "mistake"
+        return "blunder"
 
 class ChessGame:
     def __init__(self):
