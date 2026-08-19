@@ -486,60 +486,73 @@ class ChessGUI:
         pause_btn = [ttk.Button(control_frame, text="⏸ Tạm Dừng")]
         pause_btn[0].pack(side=tk.LEFT, padx=5)
 
-        # Play animation
+        # Chạy trận đấu: TÍNH nước đi rồi HIỆN NGAY từng nước một (không tính
+        # trước toàn bộ ván rồi mới phát lại) - vừa tính vừa chạy.
         def play_battle():
+            import time
+            import random
             try:
-                status_label.config(text="🔄 Đang tính toán nước đi...")
+                status_label.config(text="🔄 Đang khởi tạo engine...")
                 win.update()
 
                 game = MultiEngineGame(engine1_elo=white_elo, engine2_elo=black_elo)
-                moves = game.play_full_game(max_moves=200)
-                result = game.get_result()
 
-                status_label.config(text="▶️ Đang phát video...")
+                status_label.config(text="▶️ Đang thi đấu trực tiếp...")
 
-                # Get speed
-                speed_text = speed_var.get()
-                if "Chậm" in speed_text:
-                    delay = 4
-                elif "Nhanh" in speed_text:
-                    delay = 1
-                elif "Flash" in speed_text:
-                    delay = 0.5
-                else:
-                    delay = 2
+                moves = []
 
-                # Playback
-                playback_board = chess.Board()
-                move_list = []
-
-                for i, move_uci in enumerate(moves):
+                for i in range(200):
                     if not win.winfo_exists():
+                        return
+                    if game.board.is_game_over():
                         break
 
-                    try:
-                        move = chess.Move.from_uci(move_uci)
-                        playback_board.push(move)
-                        move_list.append(move_uci)
-                    except:
-                        continue
+                    # Get speed mỗi vòng để người dùng đổi tốc độ giữa chừng vẫn có tác dụng
+                    speed_text = speed_var.get()
+                    if "Chậm" in speed_text:
+                        delay = 4
+                    elif "Nhanh" in speed_text:
+                        delay = 1
+                    elif "Flash" in speed_text:
+                        delay = 0.5
+                    else:
+                        delay = 2
 
-                    # Update display
+                    # Tính nước đi CHO LƯỢT HIỆN TẠI
+                    if game.board.turn:
+                        engine, random_chance = game.stockfish1, game.engine1_random_chance
+                    else:
+                        engine, random_chance = game.stockfish2, game.engine2_random_chance
+
+                    engine.set_fen_position(game.board.fen())
+                    best_move_uci = engine.get_best_move_time(1000)
+                    if not best_move_uci:
+                        break
+
+                    if random_chance > 0 and random.random() < random_chance:
+                        legal_moves = list(game.board.legal_moves)
+                        if legal_moves:
+                            best_move_uci = random.choice(legal_moves).uci()
+
+                    move = chess.Move.from_uci(best_move_uci)
+                    game.board.push(move)
+                    game.moves.append(best_move_uci)
+                    moves.append(best_move_uci)
+
+                    # HIỂN THỊ NGAY nước vừa tính xong
                     side = "♔ Trắng" if i % 2 == 0 else "♚ Đen"
                     move_num = (i // 2) + 1
-                    move_info.config(text=f"Nước {i+1} ({side}): {move_uci}")
+                    move_info.config(text=f"Nước {i+1} ({side}): {best_move_uci}")
 
-                    # Try to get evaluation
                     try:
-                        if game.stockfish1.get_evaluation():
-                            eval_val = game.stockfish1.get_evaluation()['value'] / 100
-                            eval_info.config(text=f"📊 Đánh giá: {eval_val:+.2f}")
+                        eval_val = engine.get_evaluation()
+                        if eval_val and eval_val.get('type') == 'cp':
+                            eval_info.config(text=f"📊 Đánh giá: {eval_val['value']/100:+.2f}")
                     except:
                         pass
 
-                    # Build move list display
                     if i % 2 == 1:
-                        move_text = f"{move_num}. {moves[i-1]} {move_uci}"
+                        move_text = f"{move_num}. {moves[i-1]} {best_move_uci}"
                     else:
                         move_text = ""
 
@@ -550,13 +563,12 @@ class ChessGUI:
                             new_text = " ".join(new_text.split()[-40:])
                         moves_info.config(text=new_text)
 
-                    # Draw board
-                    draw_board_video(playback_board)
+                    draw_board_video(game.board)
 
-                    import time
                     time.sleep(delay)
 
                 # Final state
+                result = game.get_result()
                 status_label.config(text=f"✅ Kết Thúc: {result}")
                 move_info.config(text=f"🏁 Trò chơi kết thúc sau {len(moves)} nước")
 
