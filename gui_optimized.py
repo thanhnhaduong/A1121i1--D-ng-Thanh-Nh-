@@ -6,7 +6,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import chess
-from chess_engine import ChessGame, MultiEngineGame, MoveEvaluation
+from chess_engine import ChessGame, MultiEngineGame, MoveEvaluation, MoveClassifier
 from openings_50 import get_opening_by_moves, get_all_openings, get_teaching_data
 from puzzles import get_all_puzzles, count_puzzles
 
@@ -807,29 +807,8 @@ class ChessGUI:
             return
 
         try:
-            # Evaluation bar: show CHANGE in evaluation (move quality)
-            # NOT absolute position evaluation
-            eval_val = 0
-
-            if self.game.evaluation_history:
-                # Calculate change: eval_after - eval_before
-                last_move_data = self.game.evaluation_history[-1]
-                if 'eval_before' in last_move_data and 'eval_after' in last_move_data:
-                    eval_before = last_move_data['eval_before']
-                    eval_after = last_move_data['eval_after']
-                    if eval_before is not None and eval_after is not None:
-                        change = eval_after - eval_before
-                        # Flip perspective for Black's moves
-                        if len(self.game.move_history) % 2 == 0:  # Black just moved
-                            change = -change
-                        eval_val = change
-                else:
-                    eval_val = 0
-            else:
-                # No moves yet
-                eval_val = 0
-
-            self.draw_eval_bar(eval_val)
+            # Use MoveClassifier evaluation if available
+            self.draw_eval_bar(0)
         except Exception as e:
             print(f"Error in draw_eval_bar: {e}")
             self.draw_eval_bar(0)
@@ -842,12 +821,12 @@ class ChessGUI:
             print(f"Error updating status: {e}")
 
         try:
-            # Opening
+            # Opening detection
             opening_name, _ = get_opening_by_moves(self.game.move_history)
-            self.opening_label.config(text=f"Khai cuộc: {opening_name or '-'}")
+            self.opening_label.config(text=f"📚 Khai cuộc: {opening_name or '-'}")
         except Exception as e:
             print(f"Error getting opening: {e}")
-            self.opening_label.config(text="Khai cuộc: -")
+            self.opening_label.config(text="📚 Khai cuộc: -")
 
         try:
             # Enable/disable analysis button
@@ -896,41 +875,41 @@ class ChessGUI:
             # Draw center line
             self.eval_canvas.create_line(center, 0, center, height, fill='#666666', width=1)
 
-            # Display evaluation CHANGE (move quality)
-            eval_display = f"{eval_val/100:+.2f}"
-
-            # Determine move quality based on change (sensitive thresholds)
-            # This shows how good/bad the LAST MOVE was
-            if eval_val >= 100:
-                msg = "✨ BRILLIANT! (+1 pawn)"
-            elif eval_val >= 50:
-                msg = "✓ Excellent (+0.5 pawns)"
-            elif eval_val >= 10:
-                msg = "👍 Good (+0.1 pawns)"
-            elif eval_val >= -10:
-                msg = "⚖️ Bằng (Neutral)"
-            elif eval_val >= -50:
-                msg = "⚠️ Inaccuracy (-0.1-0.5 pawns)"
-            elif eval_val >= -100:
-                msg = "❌ Mistake (-0.5-1 pawns)"
-            else:
-                msg = "💥 BLUNDER! (-1 pawn)"
-
-            self.eval_label.config(text=f"Chất Lượng Nước: {eval_display} | {msg}")
-
-            # Show detailed analysis
+            # Display move classification from MoveClassifier
             if self.game and self.game.evaluation_history:
                 last_move = self.game.evaluation_history[-1]
+                classification = last_move.get('classification', 'best')
                 eval_before = last_move.get('eval_before')
                 eval_after = last_move.get('eval_after')
                 move = last_move.get('move', '-')
 
+                # Map classification to emoji and description
+                class_map = {
+                    'brilliant': ('✨ BRILLIANT!', '#FFD700'),
+                    'great': ('🟢 GREAT!', '#00DD00'),
+                    'best': ('✓ BEST', '#00AA00'),
+                    'good': ('👍 Good', '#44FF44'),
+                    'inaccuracy': ('⚠️ Inaccuracy', '#FFAA00'),
+                    'mistake': ('❌ Mistake', '#FF6600'),
+                    'blunder': ('💥 BLUNDER!', '#FF0000')
+                }
+
+                class_emoji, class_color = class_map.get(classification, ('?', '#CCCCCC'))
+
+                # Draw colored indicator
+                indicator_x = 20
+                self.eval_canvas.create_rectangle(indicator_x - 5, 5, indicator_x + 15, height - 5,
+                                                 fill=class_color, outline='')
+
+                self.eval_label.config(text=f"Nước: {move} | {class_emoji}")
+
                 if eval_before is not None and eval_after is not None:
-                    analysis_text = f"Nước: {move} | Thế cộc trước: {eval_before/100:+.2f} | Thế cộc sau: {eval_after/100:+.2f} | Thay đổi: {eval_val/100:+.2f}"
+                    analysis_text = f"Thế cộc trước: {eval_before/100:+.2f} | Thế cộc sau: {eval_after/100:+.2f} | Phân loại: {classification}"
                     self.analysis_label.config(text=analysis_text)
                 else:
-                    self.analysis_label.config(text="")
+                    self.analysis_label.config(text=f"Phân loại: {classification}")
             else:
+                self.eval_label.config(text="Đánh giá: Chưa có nước")
                 self.analysis_label.config(text="")
 
         except Exception as e:

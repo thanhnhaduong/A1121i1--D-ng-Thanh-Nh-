@@ -117,21 +117,36 @@ class ChessGame:
                 return False
 
             fen_before = self.board.fen()
+            board_before = self.board.copy(stack=False)
             eval_before = self.get_evaluation()
+
+            # Get top moves before making the move
+            top_moves_before = self.get_top_moves(5)
 
             self.board.push(move)
             self.move_history.append(move_uci)
             self.node = self.node.add_variation(move)
 
             eval_after = self.get_evaluation()
-            move_eval = self._evaluate_move(eval_before, eval_after)
+
+            # Use MoveClassifier for evaluation
+            classifier = MoveClassifier()
+            move_class = classifier.classify(
+                board_before,
+                move,
+                top_moves_before,
+                eval_before if eval_before is not None else 0,
+                eval_after if eval_after is not None else 0,
+                len(self.move_history) - 1
+            )
 
             self.evaluation_history.append({
                 'move': move_uci,
-                'evaluation': move_eval,
+                'evaluation': move_class,
                 'eval_before': eval_before,
                 'eval_after': eval_after,
-                'fen_before': fen_before
+                'fen_before': fen_before,
+                'classification': move_class
             })
 
             return True
@@ -206,6 +221,40 @@ class ChessGame:
             return best_move
         except:
             return None
+
+    def get_top_moves(self, count=5):
+        if not self.stockfish_available:
+            return []
+
+        try:
+            self.stockfish.set_fen_position(self.board.fen())
+            top_moves = []
+            for move in list(self.board.legal_moves)[:count]:
+                self.stockfish.set_fen_position(self.board.fen())
+                move_uci = move.uci()
+                # Make temporary move to evaluate
+                temp_board = self.board.copy()
+                temp_board.push(move)
+                self.stockfish.set_fen_position(temp_board.fen())
+                eval_after = self.stockfish.get_evaluation()
+
+                score_cp = 0
+                if eval_after:
+                    if eval_after['type'] == 'cp':
+                        score_cp = eval_after['value']
+                    elif eval_after['type'] == 'mate':
+                        score_cp = 10000 if eval_after['value'] > 0 else -10000
+
+                top_moves.append({
+                    'move': move_uci,
+                    'score_cp': score_cp
+                })
+
+            # Sort by score descending
+            top_moves.sort(key=lambda x: x['score_cp'], reverse=True)
+            return top_moves[:count]
+        except:
+            return []
 
     def is_game_over(self):
         return self.board.is_game_over()
