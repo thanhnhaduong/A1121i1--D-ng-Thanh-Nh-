@@ -125,13 +125,22 @@ class ChessGame:
             "stockfish"
         ]
 
+        # Skill Level dùng riêng cho nước đi CỦA AI đối thủ (độ khó người dùng chọn).
+        # Việc ĐÁNH GIÁ nước đi (evaluation/classification) luôn dùng full-strength
+        # (20) bất kể độ khó AI, để không bỏ sót đòn phản công/chiến thuật sâu
+        # sau các nước hy sinh - nếu không, engine bị làm yếu đi (Skill Level)
+        # sẽ vừa chơi kém vừa ĐÁNH GIÁ kém, gây phân loại sai (vd: thí hậu tồi
+        # bị chấm "brilliant" vì engine yếu không thấy được đòn bắt lại).
+        self.opponent_skill_level = 18
+        FULL_STRENGTH_SKILL = 20
+
         for path in stockfish_paths:
             try:
                 self.stockfish = Stockfish(
                     path=path,
                     parameters={"Threads": ENGINE_THREADS, "Hash": ENGINE_HASH_MB}
                 )
-                self.stockfish.set_skill_level(18)
+                self.stockfish.set_skill_level(FULL_STRENGTH_SKILL)
                 self.stockfish_available = True
                 print(f"✅ Stockfish loaded from: {path} (Threads={ENGINE_THREADS}, Hash={ENGINE_HASH_MB}MB)")
                 break
@@ -268,6 +277,7 @@ class ChessGame:
             return None
 
         try:
+            self.stockfish.set_skill_level(20)  # luôn đánh giá ở sức mạnh tối đa
             self.stockfish.set_fen_position(self.board.fen())
             eval_value = self.stockfish.get_evaluation()
             side_white = self.board.turn
@@ -284,10 +294,12 @@ class ChessGame:
             return None
 
     def get_best_move(self, time_ms=1000):
+        """Nước đi của AI ĐỐI THỦ - dùng đúng độ khó người dùng chọn (có thể yếu hơn)."""
         if not self.stockfish_available:
             return None
 
         try:
+            self.stockfish.set_skill_level(self.opponent_skill_level)
             self.stockfish.set_fen_position(self.board.fen())
             best_move = self.stockfish.get_best_move_time(time_ms)
             return best_move
@@ -295,14 +307,15 @@ class ChessGame:
             return None
 
     def get_top_moves(self, count=3):
-        """Lấy nước đi tốt nhất - chỉ 2 lượt tìm kiếm Stockfish (thay vì đánh giá
-        từng nước hợp lệ) để chạy nhanh trên phần cứng yếu/tầm trung."""
+        """Lấy nước đi tốt nhất để CHẤM ĐIỂM - luôn full-strength, không theo độ
+        khó AI đối thủ, để không bỏ sót đòn phản công sau các nước hy sinh."""
         if not self.stockfish_available:
             return []
 
         try:
+            self.stockfish.set_skill_level(20)
             self.stockfish.set_fen_position(self.board.fen())
-            best_move_uci = self.stockfish.get_best_move_time(300)
+            best_move_uci = self.stockfish.get_best_move_time(600)
 
             if not best_move_uci:
                 return []
@@ -351,6 +364,7 @@ class ChessGame:
             return None
 
         try:
+            self.stockfish.set_skill_level(20)
             self.stockfish.set_fen_position(self.board.fen())
             self.stockfish.set_depth(depth)
             info = self.stockfish.get_best_move()

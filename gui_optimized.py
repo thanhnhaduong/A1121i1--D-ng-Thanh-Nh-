@@ -850,7 +850,9 @@ class ChessGUI:
         self.game = ChessGame()
 
         if self.game.stockfish:
-            self.game.stockfish.set_skill_level(self.opponent_skill_level)
+            # Chỉ lưu độ khó cho nước đi CỦA AI đối thủ; việc đánh giá/chấm điểm
+            # nước đi vẫn luôn dùng full-strength (xem get_evaluation/get_top_moves)
+            self.game.opponent_skill_level = self.opponent_skill_level
 
         self.status_label.config(text="👥 Chơi" if mode == "human_vs_human" else "🤖 vs AI")
         self.is_human_white = True
