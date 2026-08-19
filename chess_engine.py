@@ -3,11 +3,17 @@
 ♟ Chess Engine - Core logic with Stockfish
 """
 
+import os
 import chess
 import chess.pgn
 from stockfish import Stockfish
 from enum import Enum
 from datetime import datetime
+
+# Tối ưu cho phần cứng yếu/tầm trung (vd: Intel i3 đời 8):
+# để lại 1 nhân cho hệ điều hành/giao diện, giới hạn tối đa 4 luồng
+ENGINE_THREADS = max(1, min(4, (os.cpu_count() or 2) - 1))
+ENGINE_HASH_MB = 64
 
 CLASS_STYLE = {
     "book":        ("Khai cuoc",     "📚", "Nước di chuan trong sach khai cuoc."),
@@ -112,10 +118,13 @@ class ChessGame:
 
         for path in stockfish_paths:
             try:
-                self.stockfish = Stockfish(path=path)
+                self.stockfish = Stockfish(
+                    path=path,
+                    parameters={"Threads": ENGINE_THREADS, "Hash": ENGINE_HASH_MB}
+                )
                 self.stockfish.set_skill_level(18)
                 self.stockfish_available = True
-                print(f"✅ Stockfish loaded from: {path}")
+                print(f"✅ Stockfish loaded from: {path} (Threads={ENGINE_THREADS}, Hash={ENGINE_HASH_MB}MB)")
                 break
             except Exception as e:
                 continue
@@ -131,10 +140,10 @@ class ChessGame:
 
             fen_before = self.board.fen()
             board_before = self.board.copy(stack=False)
-            eval_before = self.get_evaluation()
 
-            # Get top moves before making the move
-            top_moves_before = self.get_top_moves(5)
+            # Lấy nước tốt nhất trước khi đi (1-2 lượt tìm kiếm thay vì đánh giá mọi nước)
+            top_moves_before = self.get_top_moves(3)
+            eval_before = top_moves_before[0]['score_cp'] if top_moves_before else self.get_evaluation()
 
             self.board.push(move)
             self.move_history.append(move_uci)
@@ -235,44 +244,33 @@ class ChessGame:
         except:
             return None
 
-    def get_top_moves(self, count=5):
+    def get_top_moves(self, count=3):
+        """Lấy nước đi tốt nhất - chỉ 2 lượt tìm kiếm Stockfish (thay vì đánh giá
+        từng nước hợp lệ) để chạy nhanh trên phần cứng yếu/tầm trung."""
         if not self.stockfish_available:
             return []
 
         try:
             self.stockfish.set_fen_position(self.board.fen())
-            top_moves = []
+            best_move_uci = self.stockfish.get_best_move_time(300)
 
-            # Generate all legal moves
-            legal_moves = list(self.board.legal_moves)
-            if not legal_moves:
+            if not best_move_uci:
                 return []
 
-            # Evaluate each move properly
-            move_scores = []
-            for move in legal_moves:
-                temp_board = self.board.copy()
-                temp_board.push(move)
-                self.stockfish.set_fen_position(temp_board.fen())
-                eval_val = self.stockfish.get_evaluation()
+            # Đánh giá vị trí SAU nước tốt nhất (chỉ 1 lượt tìm kiếm)
+            temp_board = self.board.copy()
+            temp_board.push(chess.Move.from_uci(best_move_uci))
+            self.stockfish.set_fen_position(temp_board.fen())
+            eval_val = self.stockfish.get_evaluation()
 
-                score_cp = 0
-                if eval_val:
-                    if eval_val['type'] == 'cp':
-                        score_cp = eval_val['value']
-                    elif eval_val['type'] == 'mate':
-                        score_cp = 10000 if eval_val['value'] > 0 else -10000
+            best_score_cp = 0
+            if eval_val:
+                if eval_val['type'] == 'cp':
+                    best_score_cp = eval_val['value']
+                elif eval_val['type'] == 'mate':
+                    best_score_cp = 10000 if eval_val['value'] > 0 else -10000
 
-                move_scores.append({
-                    'move': move.uci(),
-                    'score_cp': score_cp
-                })
-
-            # Sort by score (best first)
-            move_scores.sort(key=lambda x: x['score_cp'], reverse=True)
-
-            # Return top N moves
-            return move_scores[:count]
+            return [{'move': best_move_uci, 'score_cp': best_score_cp}]
         except:
             return []
 
@@ -329,13 +327,17 @@ class MultiEngineGame:
             except:
                 continue
 
+        # 2 engine cùng tồn tại song song -> chia đôi số luồng để tránh quá tải CPU
+        battle_threads = max(1, ENGINE_THREADS // 2)
+        engine_params = {"Threads": battle_threads, "Hash": ENGINE_HASH_MB // 2}
+
         # Initialize with found path or default
         if stockfish_path:
-            self.stockfish1 = Stockfish(path=stockfish_path)
-            self.stockfish2 = Stockfish(path=stockfish_path)
+            self.stockfish1 = Stockfish(path=stockfish_path, parameters=engine_params)
+            self.stockfish2 = Stockfish(path=stockfish_path, parameters=engine_params)
         else:
-            self.stockfish1 = Stockfish()
-            self.stockfish2 = Stockfish()
+            self.stockfish1 = Stockfish(parameters=engine_params)
+            self.stockfish2 = Stockfish(parameters=engine_params)
 
         self.stockfish1.set_skill_level(engine1_skill)
         self.stockfish2.set_skill_level(engine2_skill)
