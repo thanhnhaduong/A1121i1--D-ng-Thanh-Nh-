@@ -24,6 +24,7 @@ class ChessGUI:
         self.opponent_skill_level = 18
         self.eval_cache = {}
         self.board_flipped = False  # Xoay bàn cờ
+        self.eval_mode = "classification"  # classification, centipawn, advanced
 
         self.square_size = 60
 
@@ -116,6 +117,24 @@ class ChessGUI:
 
         ttk.Button(parent, text=f"🧩 Giải Câu Đố ({count_puzzles()}+)", command=self.show_puzzles,
                   width=30).pack(fill=tk.X, padx=10, pady=2)
+
+        # Evaluation Mode
+        tk.Label(parent, text="📊 Chế Độ Đánh Giá", bg='#2a2a2a', fg='#4a9eff',
+                font=("Arial", 10, "bold")).pack(fill=tk.X, padx=10, pady=(15, 5))
+
+        eval_mode_var = tk.StringVar(value="classification")
+
+        ttk.Radiobutton(parent, text="🎯 Phân Loại (Brilliant/Best/etc)",
+                       variable=eval_mode_var, value="classification",
+                       command=lambda: self.set_eval_mode("classification")).pack(anchor=tk.W, padx=15, pady=2)
+
+        ttk.Radiobutton(parent, text="📈 Centipawn (+3.45 pawn)",
+                       variable=eval_mode_var, value="centipawn",
+                       command=lambda: self.set_eval_mode("centipawn")).pack(anchor=tk.W, padx=15, pady=2)
+
+        ttk.Radiobutton(parent, text="🧠 Advanced (Kết hợp cả 2)",
+                       variable=eval_mode_var, value="advanced",
+                       command=lambda: self.set_eval_mode("advanced")).pack(anchor=tk.W, padx=15, pady=2)
 
         # Opening
         tk.Label(parent, text="📚 Khai Cuộc", bg='#2a2a2a', fg='#4a9eff',
@@ -866,24 +885,21 @@ class ChessGUI:
             eval_clamped = min(max(eval_val, -500), 500)
 
             # Calculate bar width based on evaluation
-            # eval_val > 0 means white is better (white gets more of the bar)
-            # eval_val < 0 means black is better (black gets more of the bar)
             pct = eval_clamped / 500.0
             white_width = center + (center * pct)
             white_width = max(0, min(white_width, width))
 
-            # Draw white segment (left/bottom for white)
+            # Draw white segment
             if white_width > 0:
                 self.eval_canvas.create_rectangle(0, 0, white_width, height, fill='#ffffff', outline='')
 
-            # Draw black segment (right/top for black)
+            # Draw black segment
             if white_width < width:
                 self.eval_canvas.create_rectangle(white_width, 0, width, height, fill='#000000', outline='')
 
             # Draw center line
             self.eval_canvas.create_line(center, 0, center, height, fill='#666666', width=1)
 
-            # Display move classification from MoveClassifier
             if self.game and self.game.evaluation_history:
                 last_move = self.game.evaluation_history[-1]
                 classification = last_move.get('classification', 'best')
@@ -891,7 +907,7 @@ class ChessGUI:
                 eval_after = last_move.get('eval_after')
                 move = last_move.get('move', '-')
 
-                # Map classification to emoji and description
+                # Classification map
                 class_map = {
                     'brilliant': ('✨ BRILLIANT!', '#FFD700'),
                     'great': ('🟢 GREAT!', '#00DD00'),
@@ -904,18 +920,60 @@ class ChessGUI:
 
                 class_emoji, class_color = class_map.get(classification, ('?', '#CCCCCC'))
 
-                # Draw colored indicator
+                # Draw indicator
                 indicator_x = 20
                 self.eval_canvas.create_rectangle(indicator_x - 5, 5, indicator_x + 15, height - 5,
                                                  fill=class_color, outline='')
 
-                self.eval_label.config(text=f"Nước: {move} | {class_emoji}")
-
+                # Calculate cp_change for centipawn mode
+                cp_change = 0
                 if eval_before is not None and eval_after is not None:
-                    analysis_text = f"Thế cộc trước: {eval_before/100:+.2f} | Thế cộc sau: {eval_after/100:+.2f} | Phân loại: {classification}"
-                    self.analysis_label.config(text=analysis_text)
-                else:
-                    self.analysis_label.config(text=f"Phân loại: {classification}")
+                    cp_change = eval_after - eval_before
+                    if len(self.game.move_history) % 2 == 0:
+                        cp_change = -cp_change
+
+                cp_pawn = cp_change / 100.0
+
+                # Display based on mode
+                if self.eval_mode == "classification":
+                    self.eval_label.config(text=f"Nước: {move} | {class_emoji}")
+                    if eval_before is not None and eval_after is not None:
+                        analysis_text = f"Trước: {eval_before/100:+.2f} | Sau: {eval_after/100:+.2f} | Phân loại: {classification}"
+                        self.analysis_label.config(text=analysis_text)
+                    else:
+                        self.analysis_label.config(text=f"Phân loại: {classification}")
+
+                elif self.eval_mode == "centipawn":
+                    pawn_text = f"{cp_pawn:+.2f} pawn"
+                    if cp_pawn >= 3:
+                        msg = "🟢 Rất tốt"
+                    elif cp_pawn >= 1:
+                        msg = "✓ Tốt"
+                    elif cp_pawn >= 0:
+                        msg = "👍 OK"
+                    elif cp_pawn >= -1:
+                        msg = "⚠️ Hơi kém"
+                    elif cp_pawn >= -3:
+                        msg = "❌ Kém"
+                    else:
+                        msg = "💥 Rất kém"
+
+                    self.eval_label.config(text=f"Nước: {move} | {pawn_text} | {msg}")
+                    if eval_before is not None and eval_after is not None:
+                        analysis_text = f"Trước: {eval_before/100:+.2f} | Sau: {eval_after/100:+.2f} | Thay đổi: {cp_pawn:+.2f} pawn"
+                        self.analysis_label.config(text=analysis_text)
+                    else:
+                        self.analysis_label.config(text=pawn_text)
+
+                elif self.eval_mode == "advanced":
+                    pawn_text = f"{cp_pawn:+.2f}"
+                    accuracy = min(100, max(0, int(100 - abs(cp_pawn) * 10)))
+                    self.eval_label.config(text=f"Nước: {move} | {class_emoji} | {pawn_text} pawn | Độ chính xác: {accuracy}%")
+                    if eval_before is not None and eval_after is not None:
+                        analysis_text = f"Trước: {eval_before/100:+.2f} | Sau: {eval_after/100:+.2f} | {classification} | {cp_pawn:+.2f} pawn"
+                        self.analysis_label.config(text=analysis_text)
+                    else:
+                        self.analysis_label.config(text=f"{class_emoji} | {pawn_text} pawn")
             else:
                 self.eval_label.config(text="Đánh giá: Chưa có nước")
                 self.analysis_label.config(text="")
@@ -1208,6 +1266,11 @@ class ChessGUI:
             if puzzle_name in puzzles:
                 best = puzzles[puzzle_name]['best_move']
                 messagebox.showinfo("💡 Đáp Án", f"Nước tốt nhất: {best}")
+
+    def set_eval_mode(self, mode):
+        """Thay đổi chế độ đánh giá"""
+        self.eval_mode = mode
+        self.update_all()
 
     def flip_board(self):
         """Xoay bàn cờ"""
