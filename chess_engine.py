@@ -210,6 +210,24 @@ class ChessGame:
             return -raw_value
         return raw_value
 
+    def _set_full_strength(self):
+        """Đảm bảo engine chạy FULL STRENGTH để đánh giá/chấm điểm, bất kể
+        trước đó đã giới hạn ELO cho nước đi của AI đối thủ (get_best_move)
+        hay chưa. Chỉ gọi set_skill_level(20) là KHÔNG đủ: Stockfish HOÀN
+        TOÀN BỎ QUA "Skill Level" khi UCI_LimitStrength đang bật (chế độ ELO
+        được ưu tiên) - nếu không tắt hẳn cờ này, mọi "đánh giá full-strength"
+        sau khi từng gọi set_elo_rating() sẽ âm thầm vẫn bị giới hạn đúng
+        bằng ELO của AI đối thủ, khiến "thước đo" để chấm điểm cũng yếu
+        giống hệt con bot -> bot trông như chơi gần hoàn hảo (accuracy cao
+        giả tạo) dù thực sự đang chơi yếu."""
+        try:
+            self.stockfish.update_engine_parameters({"UCI_LimitStrength": "false", "Skill Level": 20})
+        except Exception:
+            try:
+                self.stockfish.set_skill_level(20)
+            except Exception:
+                pass
+
     def make_move(self, move_uci):
         try:
             move = chess.Move.from_uci(move_uci)
@@ -301,7 +319,7 @@ class ChessGame:
             return None
 
         try:
-            self.stockfish.set_skill_level(20)  # luôn đánh giá ở sức mạnh tối đa
+            self._set_full_strength()
             self.stockfish.set_fen_position(self.board.fen())
             eval_value = self.stockfish.get_evaluation()
             side_white = self.board.turn
@@ -330,11 +348,19 @@ class ChessGame:
         try:
             target_elo = max(ENGINE_MIN_ELO, min(ENGINE_MAX_ELO, self.opponent_elo))
             try:
-                self.stockfish.set_elo_rating(target_elo)
+                # Gọi trực tiếp update_engine_parameters (thay vì chỉ set_elo_rating)
+                # để CHẮC CHẮN bật lại UCI_LimitStrength + đặt đúng ELO, tránh việc
+                # thư viện bỏ qua vì tưởng giá trị "không đổi" so với lần cache trước,
+                # trong khi thực tế UCI_LimitStrength đã bị các lệnh full-strength
+                # (_set_full_strength) tắt đi ở giữa các nước đi.
+                self.stockfish.update_engine_parameters({"UCI_LimitStrength": "true", "UCI_Elo": target_elo})
             except Exception:
-                # Bản Stockfish cũ không hỗ trợ UCI_Elo -> quy đổi tạm sang Skill Level
-                approx_skill = round((target_elo - ENGINE_MIN_ELO) / (ENGINE_MAX_ELO - ENGINE_MIN_ELO) * 20)
-                self.stockfish.set_skill_level(max(0, min(20, approx_skill)))
+                try:
+                    self.stockfish.set_elo_rating(target_elo)
+                except Exception:
+                    # Bản Stockfish cũ không hỗ trợ UCI_Elo -> quy đổi tạm sang Skill Level
+                    approx_skill = round((target_elo - ENGINE_MIN_ELO) / (ENGINE_MAX_ELO - ENGINE_MIN_ELO) * 20)
+                    self.stockfish.set_skill_level(max(0, min(20, approx_skill)))
 
             self.stockfish.set_fen_position(self.board.fen())
             best_move = self.stockfish.get_best_move_time(time_ms)
@@ -361,7 +387,7 @@ class ChessGame:
             return []
 
         try:
-            self.stockfish.set_skill_level(20)
+            self._set_full_strength()
             self.stockfish.set_fen_position(self.board.fen())
             best_move_uci = self.stockfish.get_best_move_time(600)
 
@@ -461,7 +487,7 @@ class ChessGame:
             return None
 
         try:
-            self.stockfish.set_skill_level(20)
+            self._set_full_strength()
             self.stockfish.set_fen_position(self.board.fen())
             self.stockfish.set_depth(depth)
             info = self.stockfish.get_best_move()
