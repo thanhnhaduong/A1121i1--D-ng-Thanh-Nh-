@@ -45,6 +45,7 @@ class MoveClassifier:
         is_top_choice = bool(top_moves_before) and top_moves_before[0]["move"] == move
 
         cp_loss = max(0, best_cp - eval_after_cp)
+        cp_gain = max(0, eval_after_cp - best_cp)
 
         mover_color = board_before.turn
         board_after = board_before.copy(stack=False)
@@ -53,29 +54,34 @@ class MoveClassifier:
         mat_before = material_count(board_before, mover_color) - material_count(board_before, not mover_color)
         mat_after = material_count(board_after, mover_color) - material_count(board_after, not mover_color)
         sacrifice = (mat_after - mat_before) <= -2
+        material_gain = (mat_after - mat_before) >= 2
 
         is_mate = board_after.is_checkmate()
 
-        # Phân loại logic
+        # Phân loại logic - Brilliant và Blunder chỉ khi mất/nhận quá nhiều
         if is_mate:
-            return "brilliant" if sacrifice else "best"
+            return "best"
 
-        if sacrifice and cp_loss <= 40 and eval_after_cp >= -50:
+        # Brilliant: chỉ khi nhận quá nhiều lợi thế hoặc hy sinh thông minh
+        if cp_gain >= 300:
             return "brilliant"
-        if sacrifice and is_top_choice and cp_loss <= 20 and (best_cp - second_cp) >= 150:
+        if material_gain and cp_loss <= 100:
+            return "brilliant"
+        if sacrifice and is_top_choice and cp_loss <= 50 and (best_cp - second_cp) >= 300:
             return "brilliant"
 
         if is_top_choice and (best_cp - second_cp) >= 200 and eval_before_cp <= 100:
             return "great"
 
-        if is_top_choice or cp_loss <= 10:
+        if is_top_choice or cp_loss <= 15:
             return "best"
-        if cp_loss <= 50:
+        if cp_loss <= 75:
             return "good"
-        if cp_loss <= 120:
+        if cp_loss <= 175:
             return "inaccuracy"
-        if cp_loss <= 250:
+        if cp_loss <= 350:
             return "mistake"
+        # Blunder: chỉ khi mất quá nhiều (>3.5 pawn)
         return "blunder"
 
 class ChessGame:
