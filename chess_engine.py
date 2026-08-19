@@ -250,9 +250,22 @@ class ChessGame:
 
             top_moves = []
             if best_move_uci:
+                # Evaluate position AFTER best move
+                temp_board = self.board.copy()
+                temp_board.push(chess.Move.from_uci(best_move_uci))
+                self.stockfish.set_fen_position(temp_board.fen())
+                best_eval = self.stockfish.get_evaluation()
+
+                best_score_cp = current_cp
+                if best_eval:
+                    if best_eval['type'] == 'cp':
+                        best_score_cp = best_eval['value']
+                    elif best_eval['type'] == 'mate':
+                        best_score_cp = 10000 if best_eval['value'] > 0 else -10000
+
                 top_moves.append({
                     'move': best_move_uci,
-                    'score_cp': current_cp
+                    'score_cp': best_score_cp
                 })
 
             # Add remaining top moves if needed
