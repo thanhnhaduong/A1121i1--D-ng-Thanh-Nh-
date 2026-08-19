@@ -194,6 +194,10 @@ class ChessGUI:
         if not self.game or self.ai_thinking:
             return
 
+        if self.game.is_game_over():
+            messagebox.showinfo("Trò Chơi Kết Thúc", self.get_game_result())
+            return
+
         if self.game_mode == 'human_vs_ai':
             if self.game.get_current_turn() == 'white' and not self.is_human_white:
                 return
@@ -223,7 +227,9 @@ class ChessGUI:
                 self.draw_board()
                 self.update_all()
 
-                if self.game_mode == 'human_vs_ai' and not self.game.is_game_over():
+                if self.game.is_game_over():
+                    self.root.after(500, lambda: messagebox.showinfo("Trò Chơi Kết Thúc", self.get_game_result()))
+                elif self.game_mode == 'human_vs_ai' and not self.game.is_game_over():
                     self.root.after(1000, self.ai_move)
             else:
                 self.selected_square = None
@@ -233,15 +239,17 @@ class ChessGUI:
         self.draw_board()
 
         row, col = square // 8, square % 8
-        x1, y1 = col * self.square_size, row * self.square_size
+        disp_row, disp_col = self.get_display_coords(row, col)
+        x1, y1 = disp_col * self.square_size, disp_row * self.square_size
         x2, y2 = x1 + self.square_size, y1 + self.square_size
         self.canvas.create_rectangle(x1, y1, x2, y2, outline='yellow', width=3)
 
         for move in self.game.board.legal_moves:
             if move.from_square == square:
                 to_row, to_col = move.to_square // 8, move.to_square % 8
-                x = to_col * self.square_size + self.square_size // 2
-                y = to_row * self.square_size + self.square_size // 2
+                disp_to_row, disp_to_col = self.get_display_coords(to_row, to_col)
+                x = disp_to_col * self.square_size + self.square_size // 2
+                y = disp_to_row * self.square_size + self.square_size // 2
                 self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill='lime')
 
     def ai_move(self):
@@ -1208,8 +1216,17 @@ class ChessGUI:
 
     def get_game_result(self):
         if self.game.board.is_checkmate():
-            return "Chiếu hết!"
-        return "Hòa" if self.game.board.is_stalemate() else "Hết"
+            winner = "Trắng ♔" if not self.game.board.turn else "Đen ♚"
+            return f"Chiếu hết! {winner} thắng!"
+        if self.game.board.is_stalemate():
+            return "Hòa - Bế tắc!"
+        if self.game.board.is_insufficient_material():
+            return "Hòa - Quân cờ không đủ!"
+        if self.game.board.is_seventyfive_moves():
+            return "Hòa - 75 nước không ăn quân!"
+        if self.game.board.is_fivefold_repetition():
+            return "Hòa - Lặp lại 5 lần!"
+        return "Trò chơi kết thúc"
 
 
 def main():
