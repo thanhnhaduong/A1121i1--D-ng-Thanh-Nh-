@@ -184,7 +184,7 @@ class ChessGUI:
             col = 7 - col
         return row, col
 
-    def draw_board(self):
+    def draw_board(self, skip_square=None):
         self.canvas.delete("all")
 
         for row in range(8):
@@ -206,6 +206,8 @@ class ChessGUI:
 
         if self.game:
             for square in chess.SQUARES:
+                if square == skip_square:
+                    continue
                 piece = self.game.board.piece_at(square)
                 if piece:
                     row, col = square // 8, square % 8
@@ -215,6 +217,58 @@ class ChessGUI:
                     piece_color = self.COLORS['white'] if piece.color else self.COLORS['black']
                     self.canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
                                            font=("Arial", 50, "bold"), fill=piece_color)
+
+    def animate_move(self, from_square, to_square, on_complete=None, duration_ms=150, steps=8):
+        """Trượt quân cờ mượt từ from_square sang to_square (dựa trên trạng thái
+        bàn cờ TRƯỚC khi nước đi được thực hiện), rồi gọi on_complete để cập
+        nhật logic game (make_move, vẽ lại bàn cờ cuối cùng...). Nhập thành,
+        bắt tốt qua đường chỉ animate quân chính, quân/tốt phụ (xe nhập thành,
+        tốt bị bắt qua đường) sẽ hiện đúng vị trí cuối khi vẽ lại bàn cờ."""
+        if not self.game:
+            if on_complete:
+                on_complete()
+            return
+
+        piece = self.game.board.piece_at(from_square)
+        if not piece:
+            if on_complete:
+                on_complete()
+            return
+
+        from_row, from_col = from_square // 8, from_square % 8
+        to_row, to_col = to_square // 8, to_square % 8
+        disp_from_row, disp_from_col = self.get_display_coords(from_row, from_col)
+        disp_to_row, disp_to_col = self.get_display_coords(to_row, to_col)
+
+        start_x = disp_from_col * self.square_size + self.square_size // 2
+        start_y = disp_from_row * self.square_size + self.square_size // 2
+        end_x = disp_to_col * self.square_size + self.square_size // 2
+        end_y = disp_to_row * self.square_size + self.square_size // 2
+
+        # Vẽ bàn cờ (thế trước khi đi) nhưng ẩn quân đang di chuyển ở ô xuất phát
+        self.draw_board(skip_square=from_square)
+
+        piece_color = self.COLORS['white'] if piece.color else self.COLORS['black']
+        moving_piece = self.canvas.create_text(start_x, start_y, text=self.PIECE_UNICODE[piece.symbol()],
+                                               font=("Arial", 50, "bold"), fill=piece_color)
+
+        step_delay = max(10, duration_ms // steps)
+
+        def step(i):
+            if not self.canvas.winfo_exists():
+                return
+            if i > steps:
+                self.canvas.delete(moving_piece)
+                if on_complete:
+                    on_complete()
+                return
+            t = i / steps
+            x = start_x + (end_x - start_x) * t
+            y = start_y + (end_y - start_y) * t
+            self.canvas.coords(moving_piece, x, y)
+            self.root.after(step_delay, lambda: step(i + 1))
+
+        step(1)
 
     def on_board_click(self, event):
         if not self.game or self.ai_thinking:
@@ -251,15 +305,20 @@ class ChessGUI:
                 promotion_piece = self._ask_promotion_piece()
             move = chess.Move(self.selected_square, square, promotion=promotion_piece)
             if move in self.game.board.legal_moves:
-                self.game.make_move(move.uci())
+                from_sq, to_sq = self.selected_square, square
                 self.selected_square = None
-                self.draw_board()
-                self.update_all()
 
-                if self.game.is_game_over():
-                    self.root.after(500, lambda: messagebox.showinfo("Trò Chơi Kết Thúc", self.get_game_result()))
-                elif self.game_mode == 'human_vs_ai' and not self.game.is_game_over():
-                    self.root.after(1000, self.ai_move)
+                def after_anim(move_uci=move.uci()):
+                    self.game.make_move(move_uci)
+                    self.draw_board()
+                    self.update_all()
+
+                    if self.game.is_game_over():
+                        self.root.after(500, lambda: messagebox.showinfo("Trò Chơi Kết Thúc", self.get_game_result()))
+                    elif self.game_mode == 'human_vs_ai' and not self.game.is_game_over():
+                        self.root.after(1000, self.ai_move)
+
+                self.animate_move(from_sq, to_sq, on_complete=after_anim)
             else:
                 self.selected_square = None
                 self.draw_board()
@@ -369,16 +428,26 @@ class ChessGUI:
         best_move = self.game.get_best_move(time_ms=2000)
 
         if best_move:
-            self.game.make_move(best_move)
-            self.draw_board()
-            self.update_all()
+            move = chess.Move.from_uci(best_move)
 
-        self.ai_thinking = False
+            def after_anim():
+                self.game.make_move(best_move)
+                self.draw_board()
+                self.update_all()
+                self.ai_thinking = False
 
-        if self.game.is_game_over():
-            messagebox.showinfo("Kết Thúc", self.get_game_result())
+                if self.game.is_game_over():
+                    messagebox.showinfo("Kết Thúc", self.get_game_result())
+                else:
+                    self.status_label.config(text="Lượt của bạn")
+
+            self.animate_move(move.from_square, move.to_square, on_complete=after_anim)
         else:
-            self.status_label.config(text="Lượt của bạn")
+            self.ai_thinking = False
+            if self.game.is_game_over():
+                messagebox.showinfo("Kết Thúc", self.get_game_result())
+            else:
+                self.status_label.config(text="Lượt của bạn")
 
     def select_difficulty(self):
         dialog = tk.Toplevel(self.root)
@@ -1259,7 +1328,7 @@ class ChessGUI:
 
             draw_puzzle_board()
 
-        def draw_puzzle_board():
+        def draw_puzzle_board(skip_square=None):
             """Vẽ bàn cờ câu đố"""
             if not puzzle_game[0]:
                 return
@@ -1278,6 +1347,8 @@ class ChessGUI:
 
             # Draw pieces
             for square in chess.SQUARES:
+                if square == skip_square:
+                    continue
                 piece = board.piece_at(square)
                 if piece:
                     row, col = square // 8, square % 8
@@ -1286,6 +1357,46 @@ class ChessGUI:
                     piece_color = '#ffffff' if piece.color else '#000000'
                     puzzle_canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
                                              font=("Arial", 40, "bold"), fill=piece_color)
+
+        def animate_puzzle_move(from_square, to_square, on_complete, duration_ms=150, steps=8):
+            """Trượt quân cờ mượt trong chế độ câu đố, tương tự animate_move() ở
+            bàn cờ chính nhưng dùng canvas/tọa độ cố định riêng của cửa sổ này."""
+            board = puzzle_game[0]
+            piece = board.piece_at(from_square) if board else None
+            if not piece:
+                on_complete()
+                return
+
+            sq_size = 60
+            from_row, from_col = from_square // 8, from_square % 8
+            to_row, to_col = to_square // 8, to_square % 8
+            start_x = from_col * sq_size + sq_size // 2
+            start_y = from_row * sq_size + sq_size // 2
+            end_x = to_col * sq_size + sq_size // 2
+            end_y = to_row * sq_size + sq_size // 2
+
+            draw_puzzle_board(skip_square=from_square)
+
+            piece_color = '#ffffff' if piece.color else '#000000'
+            moving_piece = puzzle_canvas.create_text(start_x, start_y, text=self.PIECE_UNICODE[piece.symbol()],
+                                                     font=("Arial", 40, "bold"), fill=piece_color)
+
+            step_delay = max(10, duration_ms // steps)
+
+            def step(i):
+                if not puzzle_canvas.winfo_exists():
+                    return
+                if i > steps:
+                    puzzle_canvas.delete(moving_piece)
+                    on_complete()
+                    return
+                t = i / steps
+                x = start_x + (end_x - start_x) * t
+                y = start_y + (end_y - start_y) * t
+                puzzle_canvas.coords(moving_piece, x, y)
+                win.after(step_delay, lambda: step(i + 1))
+
+            step(1)
 
         def on_puzzle_click(event):
             """Xử lý click khi giải câu đố"""
@@ -1321,29 +1432,33 @@ class ChessGUI:
                     puzzle_name = puzzle_var.get()
                     best_move_str = puzzles[puzzle_name]['best_move']
 
-                    # Convert move to SAN for comparison
+                    # Convert move to SAN for comparison (phải tính TRƯỚC khi push)
                     try:
                         move_san = board.san(move)
                     except:
                         move_san = move.uci()
 
-                    # Check if correct (compare with SAN notation)
                     is_correct = (move_san == best_move_str or
                                  move_san.lower() == best_move_str.lower() or
                                  move.uci().startswith(best_move_str.lower()))
 
-                    board.push(move)
+                    from_sq, to_sq = selected_sq[0], square
                     selected_sq[0] = None
 
-                    if is_correct:
-                        solved_count[0] += 1
-                        status_label.config(text=f"Giải: {solved_count[0]}/{len(puzzles)}")
-                        messagebox.showinfo("✅ Đúng!", f"Nước gợi ý: {best_move_str}\nBạn đã giải đúng!")
-                    else:
-                        messagebox.showwarning("❌ Sai", f"Nước gợi ý: {best_move_str}\nHãy thử lại!")
-                        board.pop()
+                    def after_puzzle_anim():
+                        board.push(move)
 
-                    draw_puzzle_board()
+                        if is_correct:
+                            solved_count[0] += 1
+                            status_label.config(text=f"Giải: {solved_count[0]}/{len(puzzles)}")
+                            messagebox.showinfo("✅ Đúng!", f"Nước gợi ý: {best_move_str}\nBạn đã giải đúng!")
+                        else:
+                            messagebox.showwarning("❌ Sai", f"Nước gợi ý: {best_move_str}\nHãy thử lại!")
+                            board.pop()
+
+                        draw_puzzle_board()
+
+                    animate_puzzle_move(from_sq, to_sq, after_puzzle_anim)
                 else:
                     selected_sq[0] = None
                     draw_puzzle_board()
