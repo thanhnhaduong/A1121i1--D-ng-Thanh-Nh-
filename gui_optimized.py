@@ -323,6 +323,67 @@ class ChessGUI:
                 self.selected_square = None
                 self.draw_board()
 
+    def _draw_generic_board(self, canvas, board, sq_size, piece_font_size, skip_square=None):
+        """Vẽ bàn cờ dùng chung cho các cửa sổ phụ (AI vs AI, Học Khai Cuộc,
+        Phân Tích Thế Cờ) - không phụ thuộc self.canvas/self.game như draw_board()."""
+        canvas.delete("all")
+        for row in range(8):
+            for col in range(8):
+                x1, y1 = col * sq_size, row * sq_size
+                x2, y2 = x1 + sq_size, y1 + sq_size
+                color = '#f0d9b5' if (row + col) % 2 == 0 else '#b58863'
+                canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
+
+        for square in chess.SQUARES:
+            if square == skip_square:
+                continue
+            piece = board.piece_at(square)
+            if piece:
+                row, col = square // 8, square % 8
+                x = col * sq_size + sq_size // 2
+                y = row * sq_size + sq_size // 2
+                piece_color = '#ffffff' if piece.color else '#000000'
+                canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
+                                  font=("Arial", piece_font_size, "bold"), fill=piece_color)
+
+    def _animate_slide_blocking(self, canvas, window, board_before, move, sq_size, piece_font_size,
+                                steps=6, total_ms=120):
+        """Trượt quân cờ mượt cho các cửa sổ phụ chạy trong THREAD NỀN (AI vs AI,
+        Học Khai Cuộc, Phân Tích Thế Cờ) - dùng time.sleep() + window.update()
+        thay vì root.after() vì hàm này được gọi từ thread nền, không phải main
+        thread (root.after() lập lịch cho main thread, không phù hợp ở đây)."""
+        import time
+
+        piece = board_before.piece_at(move.from_square)
+        if not piece or not window.winfo_exists():
+            return
+
+        from_row, from_col = move.from_square // 8, move.from_square % 8
+        to_row, to_col = move.to_square // 8, move.to_square % 8
+        start_x = from_col * sq_size + sq_size // 2
+        start_y = from_row * sq_size + sq_size // 2
+        end_x = to_col * sq_size + sq_size // 2
+        end_y = to_row * sq_size + sq_size // 2
+
+        self._draw_generic_board(canvas, board_before, sq_size, piece_font_size, skip_square=move.from_square)
+
+        piece_color = '#ffffff' if piece.color else '#000000'
+        moving_piece = canvas.create_text(start_x, start_y, text=self.PIECE_UNICODE[piece.symbol()],
+                                          font=("Arial", piece_font_size, "bold"), fill=piece_color)
+
+        step_delay = max(0.01, (total_ms / 1000) / steps)
+        for i in range(1, steps + 1):
+            if not window.winfo_exists():
+                return
+            t = i / steps
+            x = start_x + (end_x - start_x) * t
+            y = start_y + (end_y - start_y) * t
+            canvas.coords(moving_piece, x, y)
+            window.update()
+            time.sleep(step_delay)
+
+        canvas.delete(moving_piece)
+
     def highlight_best_move(self, move):
         """Bôi vàng nước đi tốt nhất"""
         self.draw_board()
@@ -604,6 +665,10 @@ class ChessGUI:
                             best_move_uci = random.choice(legal_moves).uci()
 
                     move = chess.Move.from_uci(best_move_uci)
+
+                    # Trượt quân trước khi cập nhật thế cờ thật
+                    self._animate_slide_blocking(board_canvas, win, game.board, move, sq_size=60, piece_font_size=40)
+
                     game.board.push(move)
                     game.moves.append(best_move_uci)
                     moves.append(best_move_uci)
@@ -646,28 +711,7 @@ class ChessGUI:
 
         def draw_board_video(board):
             """Vẽ bàn cờ cho video"""
-            board_canvas.delete("all")
-            sq_size = 60
-
-            # Draw squares
-            for row in range(8):
-                for col in range(8):
-                    x1, y1 = col * sq_size, row * sq_size
-                    x2, y2 = x1 + sq_size, y1 + sq_size
-                    color = '#f0d9b5' if (row + col) % 2 == 0 else '#b58863'
-                    board_canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
-
-            # Draw pieces
-            for square in chess.SQUARES:
-                piece = board.piece_at(square)
-                if piece:
-                    row, col = square // 8, square % 8
-                    x = col * sq_size + sq_size // 2
-                    y = row * sq_size + sq_size // 2
-                    piece_color = '#ffffff' if piece.color else '#000000'
-                    board_canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
-                                            font=("Arial", 40, "bold"), fill=piece_color)
-
+            self._draw_generic_board(board_canvas, board, 60, 40)
             win.update()
 
         import threading
@@ -815,23 +859,7 @@ class ChessGUI:
             info_label.pack(fill=tk.X)
 
             def draw_board(board):
-                canvas.delete("all")
-                for row in range(8):
-                    for col in range(8):
-                        x1, y1 = col * 60, row * 60
-                        x2, y2 = x1 + 60, y1 + 60
-                        color = '#f0d9b5' if (row + col) % 2 == 0 else '#b58863'
-                        canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
-
-                for square in chess.SQUARES:
-                    piece = board.piece_at(square)
-                    if piece:
-                        row, col = square // 8, square % 8
-                        x = col * 60 + 30
-                        y = row * 60 + 30
-                        piece_color = '#ffffff' if piece.color else '#000000'
-                        canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
-                                         font=("Arial", 40, "bold"), fill=piece_color)
+                self._draw_generic_board(canvas, board, 60, 40)
                 anim_win.update()
 
             def animate():
@@ -841,9 +869,13 @@ class ChessGUI:
                     for i, move_uci in enumerate(moves):
                         try:
                             move = chess.Move.from_uci(move_uci)
-                            playback_board.push(move)
                         except:
                             continue
+
+                        # Trượt quân trước khi cập nhật thế cờ thật
+                        self._animate_slide_blocking(canvas, anim_win, playback_board, move,
+                                                     sq_size=60, piece_font_size=40)
+                        playback_board.push(move)
 
                         side = "Trắng ♔" if i % 2 == 0 else "Đen ♚"
                         info_label.config(text=f"Nước {i+1} ({side}): {move_uci}")
@@ -900,23 +932,7 @@ class ChessGUI:
 
         def draw_board(board):
             """Vẽ bàn cờ"""
-            canvas.delete("all")
-            for row in range(8):
-                for col in range(8):
-                    x1, y1 = col * 60, row * 60
-                    x2, y2 = x1 + 60, y1 + 60
-                    color = '#f0d9b5' if (row + col) % 2 == 0 else '#b58863'
-                    canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
-
-            for square in chess.SQUARES:
-                piece = board.piece_at(square)
-                if piece:
-                    row, col = square // 8, square % 8
-                    x = col * 60 + 30
-                    y = row * 60 + 30
-                    piece_color = '#ffffff' if piece.color else '#000000'
-                    canvas.create_text(x, y, text=self.PIECE_UNICODE[piece.symbol()],
-                                     font=("Arial", 40, "bold"), fill=piece_color)
+            self._draw_generic_board(canvas, board, 60, 40)
             analysis_win.update()
 
         # Animation in thread
@@ -946,6 +962,10 @@ class ChessGUI:
 
                 for i, move_uci in enumerate(moves):
                     move = chess.Move.from_uci(move_uci)
+
+                    # Trượt quân trước khi cập nhật thế cờ thật
+                    self._animate_slide_blocking(canvas, analysis_win, playback_board, move,
+                                                 sq_size=60, piece_font_size=40)
                     playback_board.push(move)
 
                     # Update display
