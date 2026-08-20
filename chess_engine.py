@@ -210,6 +210,18 @@ class ChessGame:
             return -raw_value
         return raw_value
 
+    def _mate_score(self, mate_in):
+        """Chuyển 'chiếu hết trong N nước' thành điểm cp rất lớn NHƯNG vẫn phân
+        biệt mate nhanh/chậm (trước đây quy về CÙNG 1 giá trị cố định ±10000
+        bất kể N). Nếu không phân biệt, khi cả best_cp (nước tốt nhất) và
+        eval_after (nước thực tế) đều rơi vào 1 chuỗi chiếu hết, cp_loss tính
+        ra gần bằng 0 dù nước đi thực chất tệ hơn hẳn (rút ngắn mate của đối
+        phương / bỏ lỡ cơ hội kháng cự lâu hơn) - khiến bên sắp thua bị chấm
+        accuracy ảo cao ngay trong đoạn chiếu hết cuối ván."""
+        distance_penalty = min(9000, abs(mate_in) * 100)
+        magnitude = 20000 - distance_penalty
+        return magnitude if mate_in > 0 else -magnitude
+
     def _set_full_strength(self):
         """Đảm bảo engine chạy FULL STRENGTH để đánh giá/chấm điểm, bất kể
         trước đó đã giới hạn ELO cho nước đi của AI đối thủ (get_best_move)
@@ -327,8 +339,7 @@ class ChessGame:
             if eval_value['type'] == 'cp':
                 return self._to_white_perspective(eval_value['value'], side_white)
             elif eval_value['type'] == 'mate':
-                mate_in = eval_value['value']
-                raw = 10000 if mate_in > 0 else -10000
+                raw = self._mate_score(eval_value['value'])
                 return self._to_white_perspective(raw, side_white)
 
             return None
@@ -406,7 +417,7 @@ class ChessGame:
                 if eval_val['type'] == 'cp':
                     best_score_cp = self._to_white_perspective(eval_val['value'], side_white)
                 elif eval_val['type'] == 'mate':
-                    raw = 10000 if eval_val['value'] > 0 else -10000
+                    raw = self._mate_score(eval_val['value'])
                     best_score_cp = self._to_white_perspective(raw, side_white)
 
             return [{'move': best_move_uci, 'score_cp': best_score_cp}]
