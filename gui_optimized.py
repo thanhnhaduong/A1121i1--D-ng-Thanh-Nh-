@@ -1026,11 +1026,19 @@ class ChessGUI:
                 self.eval_canvas.create_rectangle(indicator_x - 5, 5, indicator_x + 15, height - 5,
                                                  fill=class_color, outline='')
 
-                # Calculate cp_change for centipawn mode
-                # cp_change = eval_before - eval_after (positive = good move for whoever just moved)
+                # Calculate cp_change for centipawn mode.
+                # eval_before/eval_after are always White-perspective absolute
+                # values (dương = tốt cho Trắng), nên phải đảo dấu theo đúng
+                # màu quân vừa đi mới ra "positive = tốt cho người vừa đi":
+                # Trắng đi tốt -> eval TĂNG (eval_after - eval_before dương)
+                # Đen đi tốt -> eval GIẢM (eval_before - eval_after dương)
+                # (dùng flat eval_before - eval_after trước đây chỉ đúng cho
+                # Đen, làm ngược dấu cho mọi nước đi của Trắng)
                 cp_change = 0
                 if eval_before is not None and eval_after is not None:
-                    cp_change = eval_before - eval_after
+                    mover_white = last_move.get('mover_white', True)
+                    raw_change = eval_after - eval_before
+                    cp_change = raw_change if mover_white else -raw_change
 
                 cp_pawn = cp_change / 100.0
 
