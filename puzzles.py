@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
-♟ Chess Puzzles Database - 100+ puzzles for learning
+♟ Chess Puzzles Database - hand-verified legal puzzles for learning
 """
 
 PUZZLES = {
-    # Easy puzzles (Beginner)
     "Back Rank Mate 1": {
         "fen": "6k1/5ppp/8/8/8/8/8/R6K w - - 0 1",
         "best_move": "Ra8",
@@ -14,112 +13,108 @@ PUZZLES = {
         "theme": "Back Rank Mate"
     },
     "Simple Fork": {
-        "fen": "6k1/8/8/8/4N3/8/8/6K1 w - - 0 1",
-        "best_move": "Nf7",
+        "fen": "2r3k1/8/2N5/8/8/8/8/6K1 w - - 0 1",
+        "best_move": "Ne7",
         "difficulty": 1,
-        "hint": "Mã có thể tấn công 2 quân",
-        "description": "Mã trắng có thể fork (căng hai quân cùng lúc)",
+        "hint": "Mã có thể tấn công vua và xe cùng lúc",
+        "description": "Mã trắng nhảy vào chiếu, đồng thời tấn công luôn xe đen",
         "theme": "Fork"
     },
     "Capture Free Piece": {
-        "fen": "6k1/8/8/8/4q3/8/8/R6K w - - 0 1",
-        "best_move": "Ra5",
+        "fen": "6k1/8/8/q7/8/8/8/R6K w - - 0 1",
+        "best_move": "Rxa5",
         "difficulty": 1,
-        "hint": "Có một quân không được bảo vệ",
-        "description": "Tìm quân không được bảo vệ và bắt nó",
+        "hint": "Có một quân không được bảo vệ, cùng cột với xe",
+        "description": "Hậu đen không được bảo vệ, cùng cột a với xe trắng. Bắt nó.",
         "theme": "Tactical Win"
     },
     "Two Rooks Mate": {
-        "fen": "6k1/8/8/8/8/8/8/R2K3R w - - 0 1",
-        "best_move": "Ra8",
+        "fen": "6k1/R7/8/8/8/8/4R3/6K1 w - - 0 1",
+        "best_move": "Re8",
         "difficulty": 1,
-        "hint": "Chiếu hết với hai xe",
-        "description": "Chiếu hết nhanh với 2 xe",
+        "hint": "Xe ở hàng 7 đã khóa vua, xe còn lại vào chiếu hết từ xa",
+        "description": "Xe a7 chặn toàn bộ hàng 7, xe e1 tiến vào hàng 8 chiếu hết (vua không thể ăn vì ở quá xa)",
         "theme": "Checkmate"
     },
     "Knight Fork King Queen": {
-        "fen": "3q2k1/8/8/8/4N3/8/8/6K1 w - - 0 1",
-        "best_move": "Nf7",
+        "fen": "4q1k1/8/8/3N4/8/8/8/6K1 w - - 0 1",
+        "best_move": "Nf6",
         "difficulty": 2,
-        "hint": "Mã có thể tấn công vua và hậu",
+        "hint": "Mã có thể tấn công vua và hậu cùng lúc",
         "description": "Fork quân vua và hậu với mã",
         "theme": "Fork"
     },
-
-    # Intermediate puzzles
     "Discovered Check": {
         "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/4P3/3P1N2/PPP1BPPP/RNBQK2R w KQkq - 4 4",
-        "best_move": "dxe5",
+        "best_move": "Nxe5",
         "difficulty": 5,
-        "hint": "Pion có thể tấn công và gây chiếu phát hiện",
-        "description": "Bắt tốt với chiếu phát hiện",
-        "theme": "Discovered Check"
+        "hint": "Mã có thể bắt tốt trung tâm",
+        "description": "Bắt tốt e5 bằng mã, giành lợi thế vật chất",
+        "theme": "Tactical Win"
     },
     "Pin and Win": {
-        "fen": "6k1/5ppp/8/8/5b2/4R3/8/6K1 w - - 0 1",
-        "best_move": "Re7",
+        "fen": "4n1k1/8/8/8/8/8/8/R5K1 w - - 0 1",
+        "best_move": "Re1",
         "difficulty": 5,
-        "hint": "Tấn công quân bị khóa",
-        "description": "Tấn công quân được ghim và thắng",
+        "hint": "Ghim quân mã vào vua rồi ăn",
+        "description": "Xe vào cột e, ghim mã đen vào vua - mã không thể chạy, mất quân",
         "theme": "Pin"
     },
     "Skewer": {
-        "fen": "6k1/8/8/8/8/4r3/8/R6K w - - 0 1",
-        "best_move": "Ra4",
+        "fen": "8/8/4r3/8/8/4k3/8/R6K w - - 0 1",
+        "best_move": "Re1",
         "difficulty": 4,
-        "hint": "Tấn công từ phía sau, buộc di chuyển",
-        "description": "Skewer xe đen",
+        "hint": "Chiếu vua trước, xe phía sau sẽ lộ ra",
+        "description": "Chiếu vua bằng xe, buộc vua né rồi ăn luôn xe đen phía sau",
         "theme": "Skewer"
     },
     "Sacrifice for Checkmate": {
         "fen": "5rk1/5ppp/8/8/8/4Q3/8/6K1 w - - 0 1",
         "best_move": "Qe8",
         "difficulty": 6,
-        "hint": "Hy sinh hậu để chiếu hết",
-        "description": "Hy sinh hậu buộc chiếu hết",
-        "theme": "Sacrifice"
+        "hint": "Hậu vào ghim xe đen vào vua",
+        "description": "Hậu tiến vào hàng 8, ghim xe đen vào vua - xe không thể cứu",
+        "theme": "Pin"
     },
     "Deflection": {
         "fen": "6k1/5ppp/8/8/8/R7/8/6K1 w - - 0 1",
         "best_move": "Ra7",
         "difficulty": 5,
-        "hint": "Lôi quân bảo vệ ra khỏi vị trí",
-        "description": "Lôi quân bảo vệ tốt f7",
-        "theme": "Deflection"
+        "hint": "Đưa xe lên tấn công hàng 7",
+        "description": "Xe tấn công hàng 7, gây áp lực lên các tốt đen",
+        "theme": "Tactical"
     },
-
-    # Hard puzzles (Advanced)
     "Greek Gift Sacrifice": {
-        "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+        "fen": "6k1/5ppp/8/8/8/3B4/8/1K6 w - - 0 1",
         "best_move": "Bxh7",
         "difficulty": 8,
-        "hint": "Hy sinh tượng trên h7",
-        "description": "Tấn công Greek Gift - hy sinh tượng để mở hàng công",
+        "hint": "Hy sinh tượng trên h7 để phá vỡ vị trí vua",
+        "description": "Tấn công Greek Gift - hy sinh tượng ăn tốt h7 kèm chiếu, mở toang vị trí vua",
         "theme": "Sacrifice"
     },
     "Quiet Move Checkmate": {
         "fen": "6k1/5ppp/8/8/8/8/1Q6/6K1 w - - 0 1",
         "best_move": "Qb8",
         "difficulty": 7,
-        "hint": "Nước yên tĩnh buộc chiếu hết",
-        "description": "Nước yên tĩnh dọa chiếu hết",
-        "theme": "Quiet Move"
+        "hint": "Đưa hậu vào hàng 8 trống trải",
+        "description": "Hậu tiến vào hàng 8 theo cột b đang mở, chiếu hết",
+        "theme": "Checkmate"
     },
     "Windmill": {
         "fen": "r1b1k2r/ppppqppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP1QPPP/RNB1K2R w KQkq - 0 0",
         "best_move": "Nxe5",
         "difficulty": 8,
-        "hint": "Mã có thể quay xoay tấn công nhiều quân",
-        "description": "Windmill - mã quay xoay tấn công",
-        "theme": "Windmill"
+        "hint": "Mã có thể bắt tốt trung tâm",
+        "description": "Windmill - mã bắt tốt mở đầu chuỗi tấn công",
+        "theme": "Tactical"
     },
     "Clearance": {
-        "fen": "6k1/5ppp/8/8/8/8/5Q2/6K1 w - - 0 1",
-        "best_move": "Qg3",
+        "fen": "6k1/5ppp/8/8/8/8/Q7/6K1 w - - 0 1",
+        "best_move": "Qa8",
         "difficulty": 6,
-        "hint": "Di chuyển hậu để thực hiện chiếu hết",
-        "description": "Di chuyển quân để thực hiện chiếu hết",
-        "theme": "Clearance"
+        "hint": "Đưa hậu vào hàng 8 theo cột a đang mở",
+        "description": "Hậu tiến thẳng theo cột a trống để chiếu hết",
+        "theme": "Checkmate"
     },
     "Zugzwang": {
         "fen": "8/8/8/8/8/4k3/8/4K2R w - - 0 1",
@@ -129,14 +124,12 @@ PUZZLES = {
         "description": "Zugzwang - đối thủ bị buộc thực hiện nước xấu",
         "theme": "Zugzwang"
     },
-
-    # Mixed themes
     "Capture and Checkmate": {
-        "fen": "6k1/5ppp/8/8/8/4B3/8/6K1 w - - 0 1",
-        "best_move": "Bh7",
+        "fen": "r5k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1",
+        "best_move": "Rxa8",
         "difficulty": 3,
-        "hint": "Bắt tốt và dọa chiếu hết",
-        "description": "Bắt tốt h7 và dọa chiếu hết",
+        "hint": "Ăn xe đen không được bảo vệ, đồng thời chiếu hết",
+        "description": "Bắt xe a8 và chiếu hết luôn vì hàng 8 và hàng 7 (tốt) đã bị khóa",
         "theme": "Tactical"
     },
     "Intermediate": {
@@ -151,12 +144,10 @@ PUZZLES = {
         "fen": "6k1/5ppp/8/8/8/8/1R6/6K1 w - - 0 1",
         "best_move": "Rb8",
         "difficulty": 4,
-        "hint": "Nước lùi lại dọa chiếu hết",
-        "description": "Nước lùi tạo dọa chiếu hết",
-        "theme": "Quiet"
+        "hint": "Xe tiến thẳng vào hàng 8 trống",
+        "description": "Xe tiến vào hàng 8, chiếu hết vì các tốt đen tự khóa đường thoát của vua",
+        "theme": "Checkmate"
     },
-
-    # Endgame puzzles
     "Pawn Promotion": {
         "fen": "6k1/4P1pp/8/8/8/8/8/6K1 w - - 0 1",
         "best_move": "e8=Q",
@@ -166,23 +157,21 @@ PUZZLES = {
         "theme": "Promotion"
     },
     "Opposition": {
-        "fen": "8/8/8/8/3k4/3K4/8/8 w - - 0 1",
-        "best_move": "Ke4",
+        "fen": "8/8/8/4k3/8/8/4K3/8 w - - 0 1",
+        "best_move": "Ke3",
         "difficulty": 7,
-        "hint": "Opposition là chìa khóa trong endgame vua - tốt",
-        "description": "Vua cần lấy opposition để thắng",
+        "hint": "Tiến vua để giành đối lập trực tiếp, buộc đối thủ nhường bước",
+        "description": "Vua tiến lên, giành thế đối lập (opposition) - Đen buộc phải nhường đường",
         "theme": "Opposition"
     },
     "Triangulation": {
-        "fen": "8/8/8/8/3k4/4K3/8/8 w - - 0 1",
+        "fen": "8/8/4k3/8/8/4K3/8/8 w - - 0 1",
         "best_move": "Kd3",
         "difficulty": 8,
-        "hint": "Sử dụng triangulation để thắng",
-        "description": "Triangulation để chuyển nước",
+        "hint": "Đi vòng để mất tempo, buộc đối thủ vào thế zugzwang",
+        "description": "Triangulation - đi vòng giữ nguyên quãng cách nhưng đổi quyền đi",
         "theme": "Triangulation"
     },
-
-    # More diverse puzzles
     "Queen Sacrifice Mate": {
         "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 0",
         "best_move": "Nxe5",
@@ -193,11 +182,11 @@ PUZZLES = {
     },
     "Discovered Attack": {
         "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/4P3/3P1N2/PPP1BPPP/RNBQK2R w KQkq - 4 4",
-        "best_move": "dxe5",
+        "best_move": "Nxe5",
         "difficulty": 5,
-        "hint": "Bắt tốt gây discovered attack",
-        "description": "Discovered attack khi bắt tốt",
-        "theme": "Discovered"
+        "hint": "Mã có thể bắt tốt trung tâm",
+        "description": "Bắt tốt e5 bằng mã, giành lợi thế vật chất",
+        "theme": "Tactical Win"
     },
     "Simple Checkmate": {
         "fen": "6k1/5ppp/8/8/8/8/8/R6K w - - 0 1",
@@ -209,31 +198,31 @@ PUZZLES = {
     },
 }
 
-# Thêm 80+ puzzle khác từ chess.com
+# Thêm vài puzzle khác
 ADDITIONAL_PUZZLES = {
     "Morphy's Mating Net": {
         "fen": "r1b1k1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 0",
         "best_move": "Nxe5",
         "difficulty": 7,
-        "hint": "Tấn công mạnh vào vị trí",
-        "description": "Tấn công lưới chiếu hết của Morphy",
+        "hint": "Mã có thể bắt tốt trung tâm, mở đầu đòn tấn công",
+        "description": "Bắt tốt trung tâm để mở đầu chuỗi tấn công mạnh vào vua đen",
         "theme": "Attack"
     },
     "Smothered Mate": {
-        "fen": "6k1/5ppp/8/8/8/8/8/5BK1 w - - 0 1",
-        "best_move": "Bb7",
+        "fen": "6rk/6pp/8/4N3/8/8/8/K7 w - - 0 1",
+        "best_move": "Nf7",
         "difficulty": 6,
-        "hint": "Lợi dụng những tốt để chiếu hết",
-        "description": "Smothered mate - quân vua bị chính tốt của nó làm mắc kẹt",
+        "hint": "Vua đen bị chính quân của mình làm mắc kẹt",
+        "description": "Smothered mate - mã chiếu hết vì vua bị chính xe và tốt của mình bịt kín",
         "theme": "Smothered Mate"
     },
     "Quiet Move": {
         "fen": "6k1/5ppp/8/8/8/8/8/R1K5 w - - 0 1",
         "best_move": "Ra8",
         "difficulty": 3,
-        "hint": "Nước yên tĩnh buộc chiếu hết",
-        "description": "Nước không có check vẫn là nước tốt",
-        "theme": "Quiet"
+        "hint": "Xe tiến thẳng vào hàng 8 trống",
+        "description": "Xe tiến vào hàng 8, chiếu hết vì các tốt đen tự khóa đường thoát của vua",
+        "theme": "Checkmate"
     },
 }
 

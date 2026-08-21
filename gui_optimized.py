@@ -413,6 +413,20 @@ class ChessGUI:
         self.canvas.create_line(from_center_x, from_center_y, to_center_x, to_center_y,
                                fill='#FFFF00', width=3, arrow=tk.LAST)
 
+    @staticmethod
+    def _normalize_move_notation(s):
+        """Chuẩn hóa 1 chuỗi ký hiệu nước đi (SAN) để so sánh: bỏ ký hiệu chiếu
+        (+), chiếu hết (#), bắt quân (x), phong cấp (=), và về chữ thường.
+        Nếu không chuẩn hóa, 1 nước đi ĐÚNG nhưng SAN thực tế có thêm "+"/"#"
+        (vd python-chess luôn tự thêm "#" cho nước chiếu hết) trong khi dữ liệu
+        câu đố ghi thiếu ký hiệu đó (hoặc ngược lại) sẽ bị báo SAI dù người
+        chơi tìm đúng nước - đây là nguyên nhân nhiều câu đố báo sai dù đi
+        đúng đáp án."""
+        s = s.strip().lower()
+        for ch in ('+', '#', 'x', '=', '!', '?'):
+            s = s.replace(ch, '')
+        return s
+
     def _is_promotion_move(self, board, from_square, to_square):
         """Kiểm tra xem đây có phải nước tốt phong cấp hợp lệ không (bất kỳ
         quân phong cấp nào), để quyết định có cần hỏi người chơi hay không."""
@@ -1467,9 +1481,12 @@ class ChessGUI:
                     except:
                         move_san = move.uci()
 
-                    is_correct = (move_san == best_move_str or
-                                 move_san.lower() == best_move_str.lower() or
-                                 move.uci().startswith(best_move_str.lower()))
+                    san_norm = self._normalize_move_notation(move_san)
+                    best_norm = self._normalize_move_notation(best_move_str)
+                    uci_norm = move.uci().lower()
+                    is_correct = (san_norm == best_norm or
+                                 uci_norm == best_norm or
+                                 uci_norm.startswith(best_norm))
 
                     from_sq, to_sq = selected_sq[0], square
                     selected_sq[0] = None
