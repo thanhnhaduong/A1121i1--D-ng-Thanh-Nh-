@@ -1024,8 +1024,17 @@ class ChessGUI:
             return
 
         try:
-            # Use MoveClassifier evaluation if available
-            self.draw_eval_bar(0)
+            # Thanh đánh giá trên cùng hiển thị eval TUYỆT ĐỐI của thế cờ hiện
+            # tại (góc Trắng, giống chess.com/lichess) - lấy từ eval_after của
+            # nước cuối (đã tính sẵn khi make_move, không cần hỏi lại engine).
+            # Trước đây bị hard-code truyền 0 nên thanh luôn ở giữa, không bao
+            # giờ lệch về phe nào dù thế cờ chênh lệch thế nào.
+            current_eval = 0
+            if self.game.evaluation_history:
+                last_eval_after = self.game.evaluation_history[-1].get('eval_after')
+                if last_eval_after is not None:
+                    current_eval = last_eval_after
+            self.draw_eval_bar(current_eval)
         except Exception as e:
             print(f"Error in draw_eval_bar: {e}")
             self.draw_eval_bar(0)
