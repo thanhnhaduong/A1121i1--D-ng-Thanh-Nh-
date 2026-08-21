@@ -1509,7 +1509,7 @@ class ChessGUI:
         ttk.Button(bottom, text="⬅️ Câu Trước", command=lambda: navigate_puzzle(-1)).pack(side=tk.LEFT, padx=5)
         ttk.Button(bottom, text="➡️ Câu Sau", command=lambda: navigate_puzzle(1)).pack(side=tk.LEFT, padx=5)
         ttk.Button(bottom, text="🔄 Làm Lại", command=lambda: load_puzzle(puzzle_var.get())).pack(side=tk.LEFT, padx=5)
-        ttk.Button(bottom, text="💡 Xem Đáp Án", command=show_answer).pack(side=tk.LEFT, padx=5)
+        ttk.Button(bottom, text="💡 Xem Đáp Án", command=lambda: show_answer()).pack(side=tk.LEFT, padx=5)
 
         def navigate_puzzle(direction):
             """Di chuyển giữa các câu đố"""
