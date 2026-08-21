@@ -85,6 +85,14 @@ class MoveClassifier:
         sacrifice = (mat_after - mat_before) <= -2
         material_gain = (mat_after - mat_before) >= 2
 
+        # mat_after chỉ tính đến lượt VỪA đi của bạn, chưa tính đối phương ăn
+        # lại ngay lượt sau. Đổi ngang giá (vd Hậu đổi Hậu) luôn cho
+        # material_gain=True dù chẳng có gì đặc biệt, vì quân bạn vừa ăn rồi
+        # sẽ mất lại ngay. Chỉ coi là thắng quân THẬT SỰ khi ô đích KHÔNG bị
+        # đối phương tấn công (ăn miễn phí), không phải mọi cú ăn quân giá trị.
+        captured_square_defended = board_after.is_attacked_by(not mover_color, move.to_square)
+        free_material_gain = material_gain and not captured_square_defended
+
         is_mate = board_after.is_checkmate()
 
         # Phân loại logic - Brilliant và Blunder chỉ khi mất/nhận quá nhiều
@@ -94,7 +102,7 @@ class MoveClassifier:
         elif cp_gain >= 300:
             # Brilliant: chỉ khi nhận quá nhiều lợi thế hoặc hy sinh thông minh
             label = "brilliant"
-        elif material_gain and cp_loss <= 100:
+        elif free_material_gain and cp_loss <= 100:
             label = "brilliant"
         elif sacrifice and is_top_choice and cp_loss <= 50 and gap >= 300:
             label = "brilliant"
