@@ -6,7 +6,7 @@
 PUZZLES = {
     # Easy puzzles (Beginner)
     "Back Rank Mate 1": {
-        "fen": "6k1/5ppp/8/8/8/8/R6K w - - 0 1",
+        "fen": "6k1/5ppp/8/8/8/8/8/R6K w - - 0 1",
         "best_move": "Ra8",
         "difficulty": 1,
         "hint": "Chiếu hết ở hàng cuối",
@@ -14,7 +14,7 @@ PUZZLES = {
         "theme": "Back Rank Mate"
     },
     "Simple Fork": {
-        "fen": "6k1/8/8/4N3/8/8/6K1 w - - 0 1",
+        "fen": "6k1/8/8/8/4N3/8/8/6K1 w - - 0 1",
         "best_move": "Nf7",
         "difficulty": 1,
         "hint": "Mã có thể tấn công 2 quân",
@@ -22,7 +22,7 @@ PUZZLES = {
         "theme": "Fork"
     },
     "Capture Free Piece": {
-        "fen": "6k1/8/8/4q3/8/8/R6K w - - 0 1",
+        "fen": "6k1/8/8/8/4q3/8/8/R6K w - - 0 1",
         "best_move": "Ra5",
         "difficulty": 1,
         "hint": "Có một quân không được bảo vệ",
@@ -30,7 +30,7 @@ PUZZLES = {
         "theme": "Tactical Win"
     },
     "Two Rooks Mate": {
-        "fen": "6k1/8/8/8/8/8/R6R w - - 0 1",
+        "fen": "6k1/8/8/8/8/8/8/R2K3R w - - 0 1",
         "best_move": "Ra8",
         "difficulty": 1,
         "hint": "Chiếu hết với hai xe",
@@ -38,7 +38,7 @@ PUZZLES = {
         "theme": "Checkmate"
     },
     "Knight Fork King Queen": {
-        "fen": "3q2k1/8/8/4N3/8/8/6K1 w - - 0 1",
+        "fen": "3q2k1/8/8/8/4N3/8/8/6K1 w - - 0 1",
         "best_move": "Nf7",
         "difficulty": 2,
         "hint": "Mã có thể tấn công vua và hậu",
@@ -56,7 +56,7 @@ PUZZLES = {
         "theme": "Discovered Check"
     },
     "Pin and Win": {
-        "fen": "6k1/5ppp/8/5b2/4R3/8/6K1 w - - 0 1",
+        "fen": "6k1/5ppp/8/8/5b2/4R3/8/6K1 w - - 0 1",
         "best_move": "Re7",
         "difficulty": 5,
         "hint": "Tấn công quân bị khóa",
@@ -64,7 +64,7 @@ PUZZLES = {
         "theme": "Pin"
     },
     "Skewer": {
-        "fen": "6k1/8/8/8/4r3/8/R6K w - - 0 1",
+        "fen": "6k1/8/8/8/8/4r3/8/R6K w - - 0 1",
         "best_move": "Ra4",
         "difficulty": 4,
         "hint": "Tấn công từ phía sau, buộc di chuyển",
@@ -72,7 +72,7 @@ PUZZLES = {
         "theme": "Skewer"
     },
     "Sacrifice for Checkmate": {
-        "fen": "5rk1/5ppp/8/8/4Q3/8/6K1 w - - 0 1",
+        "fen": "5rk1/5ppp/8/8/8/4Q3/8/6K1 w - - 0 1",
         "best_move": "Qe8",
         "difficulty": 6,
         "hint": "Hy sinh hậu để chiếu hết",
@@ -80,7 +80,7 @@ PUZZLES = {
         "theme": "Sacrifice"
     },
     "Deflection": {
-        "fen": "6k1/5ppp/8/8/R7/8/6K1 w - - 0 1",
+        "fen": "6k1/5ppp/8/8/8/R7/8/6K1 w - - 0 1",
         "best_move": "Ra7",
         "difficulty": 5,
         "hint": "Lôi quân bảo vệ ra khỏi vị trí",
@@ -98,7 +98,7 @@ PUZZLES = {
         "theme": "Sacrifice"
     },
     "Quiet Move Checkmate": {
-        "fen": "6k1/5ppp/8/8/8/1Q6/6K1 w - - 0 1",
+        "fen": "6k1/5ppp/8/8/8/8/1Q6/6K1 w - - 0 1",
         "best_move": "Qb8",
         "difficulty": 7,
         "hint": "Nước yên tĩnh buộc chiếu hết",
@@ -114,7 +114,7 @@ PUZZLES = {
         "theme": "Windmill"
     },
     "Clearance": {
-        "fen": "6k1/5ppp/8/8/8/5Q2/6K1 w - - 0 1",
+        "fen": "6k1/5ppp/8/8/8/8/5Q2/6K1 w - - 0 1",
         "best_move": "Qg3",
         "difficulty": 6,
         "hint": "Di chuyển hậu để thực hiện chiếu hết",
@@ -122,7 +122,7 @@ PUZZLES = {
         "theme": "Clearance"
     },
     "Zugzwang": {
-        "fen": "8/8/8/8/4k3/8/4K2R w - - 0 1",
+        "fen": "8/8/8/8/8/4k3/8/4K2R w - - 0 1",
         "best_move": "Rh4",
         "difficulty": 9,
         "hint": "Bất kỳ nước đi nào của đen đều thua",
@@ -132,7 +132,7 @@ PUZZLES = {
 
     # Mixed themes
     "Capture and Checkmate": {
-        "fen": "6k1/5ppp/8/8/4B3/8/6K1 w - - 0 1",
+        "fen": "6k1/5ppp/8/8/8/4B3/8/6K1 w - - 0 1",
         "best_move": "Bh7",
         "difficulty": 3,
         "hint": "Bắt tốt và dọa chiếu hết",
@@ -148,7 +148,7 @@ PUZZLES = {
         "theme": "Tactic"
     },
     "Backward Move Wins": {
-        "fen": "6k1/5ppp/8/8/8/1R6/6K1 w - - 0 1",
+        "fen": "6k1/5ppp/8/8/8/8/1R6/6K1 w - - 0 1",
         "best_move": "Rb8",
         "difficulty": 4,
         "hint": "Nước lùi lại dọa chiếu hết",
@@ -158,7 +158,7 @@ PUZZLES = {
 
     # Endgame puzzles
     "Pawn Promotion": {
-        "fen": "6k1/4P1pp/8/8/8/8/6K1 w - - 0 1",
+        "fen": "6k1/4P1pp/8/8/8/8/8/6K1 w - - 0 1",
         "best_move": "e8=Q",
         "difficulty": 1,
         "hint": "Nâng tốt thành hậu",
@@ -166,7 +166,7 @@ PUZZLES = {
         "theme": "Promotion"
     },
     "Opposition": {
-        "fen": "8/8/8/3k4/3K4/8/8 w - - 0 1",
+        "fen": "8/8/8/8/3k4/3K4/8/8 w - - 0 1",
         "best_move": "Ke4",
         "difficulty": 7,
         "hint": "Opposition là chìa khóa trong endgame vua - tốt",
@@ -174,7 +174,7 @@ PUZZLES = {
         "theme": "Opposition"
     },
     "Triangulation": {
-        "fen": "8/8/8/3k4/4K3/8/8 w - - 0 1",
+        "fen": "8/8/8/8/3k4/4K3/8/8 w - - 0 1",
         "best_move": "Kd3",
         "difficulty": 8,
         "hint": "Sử dụng triangulation để thắng",
@@ -200,7 +200,7 @@ PUZZLES = {
         "theme": "Discovered"
     },
     "Simple Checkmate": {
-        "fen": "6k1/5ppp/8/8/8/8/R6K w - - 0 1",
+        "fen": "6k1/5ppp/8/8/8/8/8/R6K w - - 0 1",
         "best_move": "Ra8",
         "difficulty": 1,
         "hint": "Chiếu hết với xe ở hàng 8",
@@ -220,7 +220,7 @@ ADDITIONAL_PUZZLES = {
         "theme": "Attack"
     },
     "Smothered Mate": {
-        "fen": "6k1/5ppp/8/8/8/8/5BK1 w - - 0 1",
+        "fen": "6k1/5ppp/8/8/8/8/8/5BK1 w - - 0 1",
         "best_move": "Bb7",
         "difficulty": 6,
         "hint": "Lợi dụng những tốt để chiếu hết",
@@ -228,7 +228,7 @@ ADDITIONAL_PUZZLES = {
         "theme": "Smothered Mate"
     },
     "Quiet Move": {
-        "fen": "6k1/5ppp/8/8/8/8/R7 w - - 0 1",
+        "fen": "6k1/5ppp/8/8/8/8/8/R1K5 w - - 0 1",
         "best_move": "Ra8",
         "difficulty": 3,
         "hint": "Nước yên tĩnh buộc chiếu hết",
@@ -240,17 +240,6 @@ ADDITIONAL_PUZZLES = {
 # Combine all puzzles
 PUZZLES.update(ADDITIONAL_PUZZLES)
 
-# Add more puzzles to reach 100+
-for i in range(80, 101):
-    if f"Puzzle {i}" not in PUZZLES:
-        PUZZLES[f"Puzzle {i}"] = {
-            "fen": "8/8/8/8/8/8/8/8 w - - 0 1",
-            "best_move": "a3",
-            "difficulty": 1 + (i % 9),
-            "hint": "Puzzle chưa được định nghĩa",
-            "description": f"Câu đố số {i}",
-            "theme": "Training"
-        }
 
 def get_puzzle_by_id(puzzle_id):
     """Lấy puzzle theo ID"""
