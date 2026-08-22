@@ -90,8 +90,17 @@ class MoveClassifier:
         # material_gain=True dù chẳng có gì đặc biệt, vì quân bạn vừa ăn rồi
         # sẽ mất lại ngay. Chỉ coi là thắng quân THẬT SỰ khi ô đích KHÔNG bị
         # đối phương tấn công (ăn miễn phí), không phải mọi cú ăn quân giá trị.
+        #
+        # NGOẠI LỆ: nếu quân đi là VUA thì is_attacked_by(not mover_color, ...)
+        # LUÔN LUÔN trả về False một cách vô nghĩa - luật cờ vua đã cấm Vua đi
+        # vào ô bị đối phương kiểm soát, nên "ô đích không bị tấn công" là điều
+        # hiển nhiên đúng với MỌI nước Vua ăn quân, kể cả khi đó chỉ là bắt lại
+        # quân bắt buộc (vd Vua ăn lại Hậu vừa chiếu - Kxf7). Nếu không loại
+        # trừ, MỌI nước Vua ăn quân giá trị đều bị chấm nhầm thành "brilliant".
+        moving_piece = board_before.piece_at(move.from_square)
+        is_king_move = moving_piece is not None and moving_piece.piece_type == chess.KING
         captured_square_defended = board_after.is_attacked_by(not mover_color, move.to_square)
-        free_material_gain = material_gain and not captured_square_defended
+        free_material_gain = material_gain and not captured_square_defended and not is_king_move
 
         is_mate = board_after.is_checkmate()
 
