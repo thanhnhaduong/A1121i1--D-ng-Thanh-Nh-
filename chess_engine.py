@@ -83,24 +83,20 @@ class MoveClassifier:
         mat_before = material_count(board_before, mover_color) - material_count(board_before, not mover_color)
         mat_after = material_count(board_after, mover_color) - material_count(board_after, not mover_color)
         sacrifice = (mat_after - mat_before) <= -2
-        material_gain = (mat_after - mat_before) >= 2
 
-        # mat_after chỉ tính đến lượt VỪA đi của bạn, chưa tính đối phương ăn
-        # lại ngay lượt sau. Đổi ngang giá (vd Hậu đổi Hậu) luôn cho
-        # material_gain=True dù chẳng có gì đặc biệt, vì quân bạn vừa ăn rồi
-        # sẽ mất lại ngay. Chỉ coi là thắng quân THẬT SỰ khi ô đích KHÔNG bị
-        # đối phương tấn công (ăn miễn phí), không phải mọi cú ăn quân giá trị.
-        #
-        # NGOẠI LỆ: nếu quân đi là VUA thì is_attacked_by(not mover_color, ...)
-        # LUÔN LUÔN trả về False một cách vô nghĩa - luật cờ vua đã cấm Vua đi
-        # vào ô bị đối phương kiểm soát, nên "ô đích không bị tấn công" là điều
-        # hiển nhiên đúng với MỌI nước Vua ăn quân, kể cả khi đó chỉ là bắt lại
-        # quân bắt buộc (vd Vua ăn lại Hậu vừa chiếu - Kxf7). Nếu không loại
-        # trừ, MỌI nước Vua ăn quân giá trị đều bị chấm nhầm thành "brilliant".
-        moving_piece = board_before.piece_at(move.from_square)
-        is_king_move = moving_piece is not None and moving_piece.piece_type == chess.KING
-        captured_square_defended = board_after.is_attacked_by(not mover_color, move.to_square)
-        free_material_gain = material_gain and not captured_square_defended and not is_king_move
+        # LƯU Ý: đã bỏ hẳn nhánh "brilliant" dựa trên material_gain (thắng
+        # quân trong 1 nước + ô đích không bị tấn công). Lý do: material_gain
+        # chỉ so material TRƯỚC/SAU đúng 1 nước đi, nên không thể phân biệt
+        # "thắng quân thật sự" với "ăn lại bình thường để kết thúc 1 pha đổi
+        # quân ngang giá" - cả 2 đều cho thấy material tăng vọt y hệt nhau ở
+        # nước ăn lại. Từng thử vá bằng cách kiểm tra "ô đích có còn bị đối
+        # phương tấn công không", nhưng sau khi ăn lại thì thường KHÔNG còn ai
+        # bảo vệ nữa (quân bảo vệ ban đầu đã bị đổi mất trong chính pha đó),
+        # nên vẫn báo nhầm "ăn miễn phí" cho những nước ăn lại hiển nhiên nhất
+        # (vd Vua ăn lại Hậu vừa chiếu, hoặc Xe ăn lại sau khi Tượng vừa đổi).
+        # Cách đáng tin cậy duy nhất là dựa vào cp_gain - đánh giá của chính
+        # Stockfish, vì engine đã tính toán xuyên suốt cả chuỗi đổi quân chứ
+        # không chỉ nhìn 1 nước đơn lẻ.
 
         is_mate = board_after.is_checkmate()
 
@@ -110,8 +106,6 @@ class MoveClassifier:
             label = "best"
         elif cp_gain >= 300:
             # Brilliant: chỉ khi nhận quá nhiều lợi thế hoặc hy sinh thông minh
-            label = "brilliant"
-        elif free_material_gain and cp_loss <= 100:
             label = "brilliant"
         elif sacrifice and is_top_choice and cp_loss <= 50 and gap >= 300:
             label = "brilliant"
