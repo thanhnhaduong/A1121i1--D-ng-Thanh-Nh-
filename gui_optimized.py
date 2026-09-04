@@ -157,6 +157,16 @@ class ChessGUI:
                                      fg='#ffaa00', font=("Arial", 9), wraplength=360)
         self.opening_label.pack(fill=tk.X, padx=10, pady=2)
 
+        # Strategic advisor & tools
+        tk.Label(parent, text="🧠 Cố Vấn & Công Cụ", bg='#2a2a2a', fg='#4a9eff',
+                font=("Arial", 10, "bold")).pack(fill=tk.X, padx=10, pady=(15, 5))
+
+        ttk.Button(parent, text="🧠 Cố Vấn Chiến Thuật", command=self.show_strategic_advisor,
+                  width=30).pack(fill=tk.X, padx=10, pady=2)
+
+        ttk.Button(parent, text="🎨 Tạo Bàn Cờ (Test)", command=self.show_board_editor,
+                  width=30).pack(fill=tk.X, padx=10, pady=2)
+
         # Status
         ttk.Separator(parent, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=10, pady=10)
 
@@ -1017,6 +1027,275 @@ class ChessGUI:
         import threading
         thread = threading.Thread(target=run_analysis, daemon=True)
         thread.start()
+
+    def show_strategic_advisor(self):
+        """Cố vấn chiến thuật: liệt kê các nước đi đáng cân nhắc nhất kèm phân
+        loại Tấn công/Phòng thủ/Phát triển, thay vì chỉ đưa ra 1 nước tốt nhất
+        duy nhất. Người chơi có thể chọn hướng chơi phù hợp phong cách của
+        mình rồi áp dụng luôn từ cửa sổ này."""
+        if not self.game:
+            messagebox.showwarning("Lỗi", "Chưa bắt đầu trò chơi")
+            return
+        if not self.game.stockfish_available:
+            messagebox.showwarning("Lỗi", "Stockfish không khả dụng")
+            return
+        if self.game.board.is_game_over():
+            messagebox.showinfo("Trò Chơi Kết Thúc", self.get_game_result())
+            return
+
+        win = tk.Toplevel(self.root)
+        win.title("🧠 Cố Vấn Chiến Thuật")
+        win.geometry("560x560")
+        win.configure(bg='#1a1a1a')
+
+        turn_text = "Trắng ♔" if self.game.board.turn else "Đen ♚"
+        tk.Label(win, text=f"Các phương án cho lượt: {turn_text}", bg='#1a1a1a', fg='#4a9eff',
+                font=("Arial", 12, "bold"), pady=10).pack(fill=tk.X)
+
+        status_label = tk.Label(win, text="⏳ Đang phân tích các phương án (có thể mất vài giây)...",
+                               bg='#1a1a1a', fg='#ffaa00', font=("Arial", 10, "bold"), wraplength=520)
+        status_label.pack(fill=tk.X, padx=10, pady=5)
+
+        legend = tk.Label(win, text="⚔️ Tấn công = tăng uy hiếp Vua đối phương   "
+                                    "🛡️ Phòng thủ = tăng an toàn Vua mình   "
+                                    "♟️ Phát triển = củng cố thế trận",
+                         bg='#1a1a1a', fg='#888888', font=("Arial", 8), wraplength=520, justify=tk.LEFT)
+        legend.pack(fill=tk.X, padx=10, pady=(0, 5))
+
+        list_frame = tk.Frame(win, bg='#1a1a1a')
+        list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+        category_style = {
+            'attack': ('⚔️ Tấn công', '#FF6666'),
+            'defense': ('🛡️ Phòng thủ', '#66AAFF'),
+            'develop': ('♟️ Phát triển', '#88DD88'),
+        }
+
+        def apply_option(move_uci):
+            if self.game.make_move(move_uci):
+                win.destroy()
+                self.draw_board()
+                self.update_all()
+                if self.game.is_game_over():
+                    self.root.after(300, lambda: messagebox.showinfo("Trò Chơi Kết Thúc", self.get_game_result()))
+                elif self.game_mode == 'human_vs_ai':
+                    self.root.after(1000, self.ai_move)
+
+        def run_advisor():
+            try:
+                options = self.game.get_strategic_options(count=6)
+
+                for w in list_frame.winfo_children():
+                    w.destroy()
+
+                if not options:
+                    status_label.config(text="Không tìm được phương án nào.")
+                    return
+
+                status_label.config(text="✅ Các phương án khả dĩ (xếp theo đánh giá, cao nhất trước):")
+
+                for i, opt in enumerate(options, 1):
+                    cat_text, cat_color = category_style.get(opt['category'], ('?', '#CCCCCC'))
+                    row = tk.Frame(list_frame, bg='#2a2a2a')
+                    row.pack(fill=tk.X, pady=3)
+
+                    tk.Label(row, text=f"{i}. {opt['san']}", bg='#2a2a2a', fg='#ffffff',
+                            font=("Arial", 11, "bold"), width=10, anchor='w').pack(side=tk.LEFT, padx=8, pady=6)
+                    tk.Label(row, text=f"{opt['score_cp']/100:+.2f}", bg='#2a2a2a', fg='#ffaa00',
+                            font=("Arial", 10), width=8, anchor='w').pack(side=tk.LEFT)
+                    tk.Label(row, text=cat_text, bg='#2a2a2a', fg=cat_color,
+                            font=("Arial", 10, "bold"), width=14, anchor='w').pack(side=tk.LEFT, padx=4)
+                    ttk.Button(row, text="▶ Đi nước này",
+                             command=lambda m=opt['move']: apply_option(m)).pack(side=tk.RIGHT, padx=8)
+
+                win.update()
+            except Exception as e:
+                status_label.config(text=f"❌ Lỗi: {e}")
+
+        import threading
+        threading.Thread(target=run_advisor, daemon=True).start()
+
+    def show_board_editor(self):
+        """Bàn cờ tùy chỉnh: đặt quân tự do lên bất kỳ ô nào để dựng thế cờ
+        tùy ý, dùng để test các tính năng (đánh giá, câu đố, cố vấn...) với
+        vị trí do người dùng tự tạo thay vì chỉ chơi từ thế cờ khởi đầu."""
+        win = tk.Toplevel(self.root)
+        win.title("🎨 Tạo Bàn Cờ")
+        win.geometry("880x600")
+        win.configure(bg='#1a1a1a')
+
+        editor_board = [[None] * 8 for _ in range(8)]  # editor_board[rank][file], rank 0 = rank1
+        selected_piece = {'symbol': None}
+        white_to_move = tk.BooleanVar(value=True)
+
+        left = tk.Frame(win, bg='#1a1a1a')
+        left.pack(side=tk.LEFT, padx=10, pady=10)
+
+        canvas = tk.Canvas(left, width=480, height=480, bg='#f0d9b5',
+                          highlightthickness=1, highlightbackground='#444')
+        canvas.pack()
+
+        info_label = tk.Label(left, text="Chọn quân bên phải rồi click vào ô để đặt. Click quân đã đặt để xóa.",
+                             bg='#1a1a1a', fg='#aaaaaa', font=("Arial", 9), wraplength=480, justify=tk.LEFT)
+        info_label.pack(fill=tk.X, pady=(8, 0))
+
+        right = tk.Frame(win, bg='#2a2a2a', width=360)
+        right.pack(side=tk.RIGHT, fill=tk.BOTH, padx=(0, 10), pady=10)
+        right.pack_propagate(False)
+
+        def draw_editor_board():
+            canvas.delete("all")
+            sq_size = 60
+            for row in range(8):
+                for col in range(8):
+                    x1, y1 = col * sq_size, row * sq_size
+                    x2, y2 = x1 + sq_size, y1 + sq_size
+                    color = '#f0d9b5' if (row + col) % 2 == 0 else '#b58863'
+                    canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
+
+            for row in range(8):
+                for col in range(8):
+                    symbol = editor_board[7 - row][col]
+                    if symbol:
+                        x = col * sq_size + sq_size // 2
+                        y = row * sq_size + sq_size // 2
+                        piece_color = self.COLORS['white'] if symbol.isupper() else self.COLORS['black']
+                        canvas.create_text(x, y, text=self.PIECE_UNICODE[symbol],
+                                          font=("Arial", 40, "bold"), fill=piece_color)
+
+        def on_editor_click(event):
+            sq_size = 60
+            col = event.x // sq_size
+            row = event.y // sq_size
+            if not (0 <= row < 8 and 0 <= col < 8):
+                return
+            rank = 7 - row
+            if selected_piece['symbol'] is None:
+                editor_board[rank][col] = None  # chế độ xóa
+            else:
+                editor_board[rank][col] = selected_piece['symbol']
+            draw_editor_board()
+
+        canvas.bind("<Button-1>", on_editor_click)
+
+        # Piece palette
+        tk.Label(right, text="🎨 Bảng Quân Cờ", bg='#2a2a2a', fg='#4a9eff',
+                font=("Arial", 11, "bold")).pack(fill=tk.X, padx=10, pady=(10, 5))
+
+        palette_pieces = [
+            ('K', '♔ Vua Trắng'), ('Q', '♕ Hậu Trắng'), ('R', '♖ Xe Trắng'),
+            ('B', '♗ Tượng Trắng'), ('N', '♘ Mã Trắng'), ('P', '♙ Tốt Trắng'),
+            ('k', '♚ Vua Đen'), ('q', '♛ Hậu Đen'), ('r', '♜ Xe Đen'),
+            ('b', '♝ Tượng Đen'), ('n', '♞ Mã Đen'), ('p', '♟ Tốt Đen'),
+        ]
+
+        palette_frame = tk.Frame(right, bg='#2a2a2a')
+        palette_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        selected_label = tk.Label(right, text="Đang chọn: (chế độ xóa)", bg='#2a2a2a',
+                                 fg='#ffaa00', font=("Arial", 9, "bold"))
+        selected_label.pack(fill=tk.X, padx=10, pady=(5, 10))
+
+        def select_piece(symbol, label_text):
+            selected_piece['symbol'] = symbol
+            selected_label.config(text=f"Đang chọn: {label_text}")
+
+        for idx, (symbol, label_text) in enumerate(palette_pieces):
+            piece_color = self.COLORS['white'] if symbol.isupper() else self.COLORS['black']
+            btn = tk.Button(palette_frame, text=self.PIECE_UNICODE[symbol], font=("Arial", 20),
+                           width=3, bg='#3a3a3a', fg=piece_color,
+                           command=lambda s=symbol, t=label_text: select_piece(s, t))
+            btn.grid(row=idx // 6, column=idx % 6, padx=3, pady=3)
+
+        ttk.Button(right, text="🧹 Chế Độ Xóa", width=30,
+                  command=lambda: select_piece(None, "(chế độ xóa)")).pack(fill=tk.X, padx=10, pady=2)
+
+        ttk.Separator(right, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=10, pady=10)
+
+        # Side to move
+        tk.Label(right, text="Bên đi trước:", bg='#2a2a2a', fg='#4a9eff',
+                font=("Arial", 10, "bold")).pack(fill=tk.X, padx=10, pady=(0, 5))
+        tk.Radiobutton(right, text="Trắng", variable=white_to_move, value=True,
+                      bg='#2a2a2a', fg='#ffffff', selectcolor='#1a1a1a').pack(anchor=tk.W, padx=15)
+        tk.Radiobutton(right, text="Đen", variable=white_to_move, value=False,
+                      bg='#2a2a2a', fg='#ffffff', selectcolor='#1a1a1a').pack(anchor=tk.W, padx=15)
+
+        def load_standard():
+            standard = chess.Board()
+            for sq in chess.SQUARES:
+                piece = standard.piece_at(sq)
+                r, c = chess.square_rank(sq), chess.square_file(sq)
+                editor_board[r][c] = piece.symbol() if piece else None
+            white_to_move.set(True)
+            draw_editor_board()
+
+        def clear_board():
+            for r in range(8):
+                for c in range(8):
+                    editor_board[r][c] = None
+            draw_editor_board()
+
+        def build_fen():
+            rows = []
+            for rank in range(7, -1, -1):
+                row_str = ""
+                empty = 0
+                for file in range(8):
+                    symbol = editor_board[rank][file]
+                    if symbol is None:
+                        empty += 1
+                    else:
+                        if empty:
+                            row_str += str(empty)
+                            empty = 0
+                        row_str += symbol
+                if empty:
+                    row_str += str(empty)
+                rows.append(row_str)
+            side = 'w' if white_to_move.get() else 'b'
+            return '/'.join(rows) + f' {side} - - 0 1'
+
+        def start_from_position(mode):
+            fen = build_fen()
+            try:
+                test_board = chess.Board(fen)
+                if not test_board.is_valid():
+                    messagebox.showwarning("Thế cờ không hợp lệ",
+                                          "Thế cờ này vi phạm luật cờ vua (vd thiếu Vua, "
+                                          "2 Vua đứng cạnh nhau, quá nhiều Tốt...). "
+                                          "Vui lòng kiểm tra lại.")
+                    return
+            except Exception as e:
+                messagebox.showwarning("Thế cờ không hợp lệ", f"Không thể tạo thế cờ: {e}")
+                return
+
+            self.game_mode = mode
+            self.game = ChessGame(fen=fen)
+            if self.game.stockfish:
+                self.game.opponent_elo = self.opponent_elo
+            self.is_human_white = True
+            self.status_label.config(text="👥 Chơi" if mode == "human_vs_human" else "🤖 vs AI")
+            self.draw_board()
+            self.update_all()
+            win.destroy()
+
+        ttk.Separator(right, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=10, pady=10)
+
+        ttk.Button(right, text="♟️ Bàn Cờ Chuẩn", command=load_standard,
+                  width=30).pack(fill=tk.X, padx=10, pady=2)
+        ttk.Button(right, text="🧹 Xóa Toàn Bộ", command=clear_board,
+                  width=30).pack(fill=tk.X, padx=10, pady=2)
+
+        ttk.Separator(right, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=10, pady=10)
+
+        tk.Label(right, text="Bắt đầu chơi từ thế cờ này:", bg='#2a2a2a', fg='#4a9eff',
+                font=("Arial", 10, "bold")).pack(fill=tk.X, padx=10, pady=(0, 5))
+        ttk.Button(right, text="👥 2 Người", width=30,
+                  command=lambda: start_from_position("human_vs_human")).pack(fill=tk.X, padx=10, pady=2)
+        ttk.Button(right, text="🤖 vs AI", width=30,
+                  command=lambda: start_from_position("human_vs_ai")).pack(fill=tk.X, padx=10, pady=2)
+
+        load_standard()
 
     def start_game(self, mode):
         self.game_mode = mode

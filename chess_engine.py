@@ -126,8 +126,8 @@ class MoveClassifier:
         return {"classification": label, "cp_loss": cp_loss}
 
 class ChessGame:
-    def __init__(self):
-        self.board = chess.Board()
+    def __init__(self, fen=None):
+        self.board = chess.Board(fen) if fen else chess.Board()
         self.move_history = []
         self.evaluation_history = []
         self.stockfish_available = False
@@ -516,6 +516,103 @@ class ChessGame:
             return info
         except:
             return None
+
+    @staticmethod
+    def _king_safety_score(board, color):
+        """Điểm an toàn Vua đơn giản (càng CAO càng AN TOÀN): +1 cho mỗi tốt
+        còn nguyên trong lá chắn phía trước Vua, -1 cho mỗi ô sát Vua (bán
+        kính 1) đang bị quân đối phương uy hiếp. Đây là heuristic thủ công,
+        không phải điểm centipawn của Stockfish - dùng để PHÂN LOẠI nước đi
+        (tấn công/phòng thủ), không dùng để đánh giá đúng/sai nước đi."""
+        king_sq = board.king(color)
+        if king_sq is None:
+            return 0
+        score = 0
+        king_file = chess.square_file(king_sq)
+        king_rank = chess.square_rank(king_sq)
+
+        shield_rank = king_rank + (1 if color else -1)
+        if 0 <= shield_rank <= 7:
+            for df in (-1, 0, 1):
+                f = king_file + df
+                if 0 <= f <= 7:
+                    piece = board.piece_at(chess.square(f, shield_rank))
+                    if piece and piece.piece_type == chess.PAWN and piece.color == color:
+                        score += 1
+
+        for df in (-1, 0, 1):
+            for dr in (-1, 0, 1):
+                f, r = king_file + df, king_rank + dr
+                if 0 <= f <= 7 and 0 <= r <= 7:
+                    if board.is_attacked_by(not color, chess.square(f, r)):
+                        score -= 1
+
+        return score
+
+    def get_strategic_options(self, count=5):
+        """Cố vấn chiến thuật: liệt kê các nước đi đáng cân nhắc nhất cho bên
+        sắp đi, kèm phân loại Tấn công / Phòng thủ / Phát triển. Stockfish chỉ
+        cho điểm centipawn, không tự "bình luận" chiến thuật - đây là lớp
+        heuristic xây thêm dựa trên thay đổi độ an toàn Vua của 2 bên sau mỗi
+        nước đi khả dĩ. Chạy on-demand (do người dùng bấm), không dùng để
+        đánh giá nước đã đi vì khá chậm (quét toàn bộ nước hợp lệ)."""
+        if not self.stockfish_available:
+            return []
+
+        try:
+            self._set_full_strength()
+            self.stockfish.set_depth(12)
+            mover_white = self.board.turn
+            legal_moves = list(self.board.legal_moves)
+            if not legal_moves:
+                return []
+
+            king_safety_before_mover = self._king_safety_score(self.board, mover_white)
+            king_safety_before_enemy = self._king_safety_score(self.board, not mover_white)
+
+            candidates = []
+            for move in legal_moves:
+                temp_board = self.board.copy()
+                temp_board.push(move)
+
+                self.stockfish.set_fen_position(temp_board.fen())
+                eval_val = self.stockfish.get_evaluation()
+                side_white = temp_board.turn
+                score_cp = 0
+                if eval_val:
+                    if eval_val['type'] == 'cp':
+                        score_cp = self._to_white_perspective(eval_val['value'], side_white)
+                    elif eval_val['type'] == 'mate':
+                        score_cp = self._to_white_perspective(self._mate_score(eval_val['value']), side_white)
+
+                # Đổi về góc nhìn người SẮP ĐI (dương = tốt cho họ)
+                score_for_mover = score_cp if mover_white else -score_cp
+
+                safety_after_enemy = self._king_safety_score(temp_board, not mover_white)
+                safety_after_mover = self._king_safety_score(temp_board, mover_white)
+
+                attack_delta = king_safety_before_enemy - safety_after_enemy
+                defense_delta = safety_after_mover - king_safety_before_mover
+
+                if attack_delta >= 1 and attack_delta >= defense_delta:
+                    category = "attack"
+                elif defense_delta >= 1 and defense_delta > attack_delta:
+                    category = "defense"
+                else:
+                    category = "develop"
+
+                candidates.append({
+                    'move': move.uci(),
+                    'san': self.board.san(move),
+                    'score_cp': score_for_mover,
+                    'category': category,
+                })
+
+            candidates.sort(key=lambda c: c['score_cp'], reverse=True)
+            self.stockfish.set_depth(15)
+            return candidates[:count]
+        except:
+            return []
 
 class MultiEngineGame:
     def __init__(self, engine1_elo=1600, engine2_elo=1300):
