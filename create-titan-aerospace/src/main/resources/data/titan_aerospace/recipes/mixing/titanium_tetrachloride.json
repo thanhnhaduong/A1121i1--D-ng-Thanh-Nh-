@@ -1,0 +1,23 @@
+{
+  "_comment": "Kroll bước 1 — clo hóa. Chạy trong ta:chlorination_reactor, bắt buộc SUPERHEATED.",
+  "type": "titan_aerospace:chlorinating",
+  "heatRequirement": "superheated",
+  "processingTime": 200,
+  "minimumRpm": 64,
+  "ingredients": [
+    { "item": "titan_aerospace:rutile_concentrate" },
+    { "item": "titan_aerospace:rutile_concentrate" },
+    { "item": "titan_aerospace:rutile_concentrate" },
+    { "item": "titan_aerospace:rutile_concentrate" },
+    { "item": "titan_aerospace:petroleum_coke" }
+  ],
+  "fluidIngredients": [
+    { "fluid": "titan_aerospace:chlorine", "nbt": {}, "amount": 1000 }
+  ],
+  "results": [
+    { "item": "titan_aerospace:iron_slag" }
+  ],
+  "fluidResults": [
+    { "fluid": "titan_aerospace:crude_titanium_tetrachloride", "amount": 1000 }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "type": "titan_aerospace:cryo_mixing",
+  "processingTime": 200,
+  "requiredRpm": {
+    "target": 128,
+    "tolerance": 4,
+    "_comment": "128 RPM = 40.00 bar. Dải an toàn 124-132 RPM = 38.75-41.25 bar."
+  },
+  "requiredTemperature": {
+    "max": -183,
+    "unit": "celsius",
+    "_comment": "Điểm sôi của LOX. Buồng chỉ giữ được mức này khi còn LN2 làm lạnh."
+  },
+  "coolantPerBatch": 200,
+  "ingredients": [
+    { "item": "titan_aerospace:ignition_catalyst_pellet" }
+  ],
+  "fluidIngredients": [
+    { "fluid": "titan_aerospace:liquid_oxygen",   "nbt": {}, "amount": 1000 },
+    { "fluid": "titan_aerospace:liquid_hydrogen", "nbt": {}, "amount": 2680 },
+    { "fluid": "titan_aerospace:liquid_nitrogen", "nbt": {}, "amount": 200  }
+  ],
+  "fluidResults": [
+    { "fluid": "titan_aerospace:liquid_rocket_fuel", "amount": 3000 }
+  ]
+}

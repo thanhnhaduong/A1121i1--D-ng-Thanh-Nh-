@@ -1,0 +1,22 @@
+{
+  "_comment": "Hợp kim hàng không Ti-6Al-4V ≈ 90 % Ti / 6 % Al / 4 % V.",
+  "type": "create:mixing",
+  "heatRequirement": "superheated",
+  "processingTime": 400,
+  "ingredients": [
+    { "item": "titan_aerospace:titanium_ingot" },
+    { "item": "titan_aerospace:titanium_ingot" },
+    { "item": "titan_aerospace:titanium_ingot" },
+    { "item": "titan_aerospace:titanium_ingot" },
+    { "item": "titan_aerospace:titanium_ingot" },
+    { "item": "titan_aerospace:titanium_ingot" },
+    { "item": "titan_aerospace:titanium_ingot" },
+    { "item": "titan_aerospace:titanium_ingot" },
+    { "item": "titan_aerospace:titanium_ingot" },
+    { "item": "titan_aerospace:aluminium_ingot" },
+    { "item": "titan_aerospace:vanadium_dust" }
+  ],
+  "results": [
+    { "item": "titan_aerospace:ti6al4v_ingot", "count": 10 }
+  ]
+}

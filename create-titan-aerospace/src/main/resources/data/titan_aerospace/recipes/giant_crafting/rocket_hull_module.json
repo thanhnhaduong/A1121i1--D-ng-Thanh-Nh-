@@ -1,0 +1,43 @@
+{
+  "type": "titan_aerospace:giant_mechanical_crafting",
+  "minimumRpm": 250,
+  "acceptMirrored": true,
+  "pattern": [
+    "HRPHPRPHPRPHPRH",
+    "RPPPPPPPPPPPPPR",
+    "PPRPPPPRPPPPRPP",
+    "HPPOPPPPPPPOPPH",
+    "PPPPRPPPPPRPPPP",
+    "RPPPPPPOPPPPPPR",
+    "PPPPPPRPRPPPPPP",
+    "HPRPPOPAPOPPRPH",
+    "PPPPPPRPRPPPPPP",
+    "RPPPPPPOPPPPPPR",
+    "PPPPRPPPPPRPPPP",
+    "HPPOPPPPPPPOPPH",
+    "PPRPPPPRPPPPRPP",
+    "RPPPPPPPPPPPPPR",
+    "HRPHPRPHPRPHPRH"
+  ],
+  "key": {
+    "P": {
+      "item": "titan_aerospace:titanium_plate"
+    },
+    "R": {
+      "item": "titan_aerospace:titanium_rivet"
+    },
+    "H": {
+      "item": "titan_aerospace:heat_shield_tile"
+    },
+    "O": {
+      "item": "titan_aerospace:titanium_rod"
+    },
+    "A": {
+      "item": "titan_aerospace:avionics_board"
+    }
+  },
+  "result": {
+    "item": "titan_aerospace:rocket_hull_module",
+    "count": 1
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "_comment": [
+    "Bản DỰ PHÒNG bằng datapack thuần cho modpack không muốn thêm code Java.",
+    "25 % ra iron_slag là ngẫu nhiên thuần — không phòng được bằng thiết kế nhà máy.",
+    "Bản chuẩn (TitanForgeBlockEntity) biến 25 % đó thành hệ quả của việc mất nhiệt."
+  ],
+  "type": "create:sequenced_assembly",
+  "ingredient": { "item": "titan_aerospace:ti6al4v_ingot" },
+  "transitionalItem": { "item": "titan_aerospace:incomplete_titanium_plate" },
+  "loops": 4,
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        { "item": "titan_aerospace:incomplete_titanium_plate" },
+        { "item": "create:blaze_cake" }
+      ],
+      "results": [ { "item": "titan_aerospace:incomplete_titanium_plate" } ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [ { "item": "titan_aerospace:incomplete_titanium_plate" } ],
+      "results": [ { "item": "titan_aerospace:incomplete_titanium_plate" } ]
+    }
+  ],
+  "results": [
+    { "item": "titan_aerospace:titanium_plate", "chance": 75 },
+    { "item": "titan_aerospace:iron_slag", "count": 2, "chance": 25 }
+  ]
+}

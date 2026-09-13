@@ -1,0 +1,12 @@
+{
+  "type": "create:crushing",
+  "ingredients": [
+    { "item": "titan_aerospace:raw_rutile" }
+  ],
+  "results": [
+    { "item": "titan_aerospace:crushed_rutile", "count": 2 },
+    { "item": "titan_aerospace:crushed_rutile", "chance": 0.25 },
+    { "item": "titan_aerospace:tailings_sand",  "chance": 0.35 }
+  ],
+  "processingTime": 400
+}

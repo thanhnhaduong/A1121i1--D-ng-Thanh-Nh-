@@ -1,0 +1,15 @@
+{
+  "_comment": [
+    "Bản create:splashing dùng cho Encased Fan — đường BOOTSTRAP rẻ tiền.",
+    "Máy ta:hydro_cyclone dùng recipe type riêng nhưng giữ nguyên tỉ lệ 0.8 %."
+  ],
+  "type": "create:splashing",
+  "ingredients": [
+    { "item": "titan_aerospace:crushed_rutile" }
+  ],
+  "results": [
+    { "item": "titan_aerospace:rutile_concentrate" },
+    { "item": "titan_aerospace:pure_titanium_dust", "chance": 0.008 },
+    { "item": "titan_aerospace:tailings_sand",      "chance": 0.60  }
+  ]
+}
