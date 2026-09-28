@@ -1,2 +1,4 @@
 bot_memory_3x3.pkl.gz
+*.tmp
+*.hong
 __pycache__/

@@ -48,9 +48,14 @@ class App:
 
         self._build_ui()
 
-        if self.bot.load(MEMORY_FILE):
+        status = self.bot.load(MEMORY_FILE)
+        if status == "ok":
             self.log(f"Đã tải bộ nhớ: bot đã học {self.bot.games_trained:,} ván.")
         else:
+            if status == "corrupt":
+                self.log("⚠ File bộ nhớ bị hỏng (thường do chương trình bị tắt đúng lúc đang lưu).")
+                self.log(f"  Đã đổi tên nó thành {os.path.basename(MEMORY_FILE)}.hong, "
+                         "bot sẽ học lại từ đầu.")
             self.log("Bot chưa biết gì cả (bộ nhớ trống).")
             self.log("-> Hãy bấm 'Cho 2 bot tự đấu để học' trước khi chơi!")
         self.update_stats()
@@ -368,9 +373,18 @@ class App:
     def save_memory(self, silent=False):
         if self.training:
             return
-        self.bot.save(MEMORY_FILE)
-        if not silent:
-            self.log(f"Đã lưu bộ nhớ vào {os.path.basename(MEMORY_FILE)}")
+        old_text = self.status.cget("text")
+        self.status.config(text="💾 Đang lưu bộ nhớ...")
+        self.root.update_idletasks()
+        try:
+            self.bot.save(MEMORY_FILE)
+        except OSError as e:
+            self.log(f"⚠ Không lưu được bộ nhớ: {e}")
+        else:
+            if not silent:
+                self.log(f"Đã lưu bộ nhớ vào {os.path.basename(MEMORY_FILE)}")
+        finally:
+            self.status.config(text=old_text)
 
     def reset_memory(self):
         if self.training or self.demo_running:

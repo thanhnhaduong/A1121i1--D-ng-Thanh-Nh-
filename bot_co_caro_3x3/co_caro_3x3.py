@@ -266,17 +266,32 @@ class LearningBot:
         return len(self.bad_moves)
 
     def save(self, path):
-        with gzip.open(path, "wb") as f:
+        """Ghi ra file tạm rồi mới đổi tên thành file thật. Nhờ vậy nếu chương
+        trình bị tắt ngang lúc đang lưu thì file bộ nhớ cũ vẫn còn nguyên."""
+        tmp = path + ".tmp"
+        with gzip.open(tmp, "wb", compresslevel=1) as f:   # nén nhẹ -> lưu rất nhanh
             pickle.dump(self.__dict__, f, protocol=pickle.HIGHEST_PROTOCOL)
+        os.replace(tmp, path)
 
     def load(self, path):
+        """Trả về "ok", "missing" (chưa có file) hoặc "corrupt" (file bị hỏng:
+        đổi tên thành *.hong để giữ lại, bot bắt đầu với bộ nhớ trống)."""
         if not os.path.exists(path):
-            return False
-        with gzip.open(path, "rb") as f:
-            data = pickle.load(f)
+            return "missing"
+        try:
+            with gzip.open(path, "rb") as f:
+                data = pickle.load(f)
+            if not isinstance(data, dict) or not isinstance(data.get("V"), dict):
+                raise ValueError("sai định dạng")
+        except Exception:   # file ghi dở / hỏng có thể gây ra rất nhiều loại lỗi
+            try:
+                os.replace(path, path + ".hong")
+            except OSError:
+                pass
+            return "corrupt"
         data.pop("mistakes_learned", None)
         self.__dict__.update(data)
-        return True
+        return "ok"
 
 
 # ======================================================================
@@ -314,9 +329,14 @@ class App:
 
         self._build_ui()
 
-        if self.bot.load(MEMORY_FILE):
+        status = self.bot.load(MEMORY_FILE)
+        if status == "ok":
             self.log(f"Đã tải bộ nhớ: bot đã học {self.bot.games_trained:,} ván.")
         else:
+            if status == "corrupt":
+                self.log("⚠ File bộ nhớ bị hỏng (thường do chương trình bị tắt đúng lúc đang lưu).")
+                self.log(f"  Đã đổi tên nó thành {os.path.basename(MEMORY_FILE)}.hong, "
+                         "bot sẽ học lại từ đầu.")
             self.log("Bot chưa biết gì cả (bộ nhớ trống).")
             self.log("-> Hãy bấm 'Cho 2 bot tự đấu để học' trước khi chơi!")
         self.update_stats()
@@ -634,9 +654,18 @@ class App:
     def save_memory(self, silent=False):
         if self.training:
             return
-        self.bot.save(MEMORY_FILE)
-        if not silent:
-            self.log(f"Đã lưu bộ nhớ vào {os.path.basename(MEMORY_FILE)}")
+        old_text = self.status.cget("text")
+        self.status.config(text="💾 Đang lưu bộ nhớ...")
+        self.root.update_idletasks()
+        try:
+            self.bot.save(MEMORY_FILE)
+        except OSError as e:
+            self.log(f"⚠ Không lưu được bộ nhớ: {e}")
+        else:
+            if not silent:
+                self.log(f"Đã lưu bộ nhớ vào {os.path.basename(MEMORY_FILE)}")
+        finally:
+            self.status.config(text=old_text)
 
     def reset_memory(self):
         if self.training or self.demo_running:

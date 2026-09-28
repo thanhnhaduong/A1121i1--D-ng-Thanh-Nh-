@@ -230,14 +230,29 @@ class LearningBot:
         return len(self.bad_moves)
 
     def save(self, path):
-        with gzip.open(path, "wb") as f:
+        """Ghi ra file tạm rồi mới đổi tên thành file thật. Nhờ vậy nếu chương
+        trình bị tắt ngang lúc đang lưu thì file bộ nhớ cũ vẫn còn nguyên."""
+        tmp = path + ".tmp"
+        with gzip.open(tmp, "wb", compresslevel=1) as f:   # nén nhẹ -> lưu rất nhanh
             pickle.dump(self.__dict__, f, protocol=pickle.HIGHEST_PROTOCOL)
+        os.replace(tmp, path)
 
     def load(self, path):
+        """Trả về "ok", "missing" (chưa có file) hoặc "corrupt" (file bị hỏng:
+        đổi tên thành *.hong để giữ lại, bot bắt đầu với bộ nhớ trống)."""
         if not os.path.exists(path):
-            return False
-        with gzip.open(path, "rb") as f:
-            data = pickle.load(f)
+            return "missing"
+        try:
+            with gzip.open(path, "rb") as f:
+                data = pickle.load(f)
+            if not isinstance(data, dict) or not isinstance(data.get("V"), dict):
+                raise ValueError("sai định dạng")
+        except Exception:   # file ghi dở / hỏng có thể gây ra rất nhiều loại lỗi
+            try:
+                os.replace(path, path + ".hong")
+            except OSError:
+                pass
+            return "corrupt"
         data.pop("mistakes_learned", None)
         self.__dict__.update(data)
-        return True
+        return "ok"
