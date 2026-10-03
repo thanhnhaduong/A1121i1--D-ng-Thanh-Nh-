@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Bản tin KHTN 8 – Ứng dụng Khoa học tự nhiên trong đời sống, kết nối tương lai</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{
+  --paper:#f2e9d0; --ink:#1c1a16; --muted:#5b5547;
+  --red:#b3261e; --blue:#1f5f99; --green:#2f7d4f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--paper)}
+body{width:1240px;color:var(--ink);font-family:'Noto Serif','Liberation Serif',serif;font-size:16px;line-height:1.5}
+sub,sup{font-size:.68em;line-height:0}
+.ar{font-family:'DejaVu Sans','Liberation Sans',sans-serif;font-size:1.12em;line-height:1}
+.page{position:relative;padding:34px 46px 24px;
+  background:
+   radial-gradient(ellipse at 50% 40%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%),
+   radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 55%, rgba(120,90,30,.22) 100%),
+   var(--paper);}
+.page::before{content:"";position:absolute;inset:14px;border:3px double var(--ink);pointer-events:none}
+.page::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .22 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");}
+
+/* ---------- top bar & masthead ---------- */
+.topbar{display:flex;justify-content:space-between;align-items:center;
+  font:800 13px 'Be Vietnam Pro',sans-serif;letter-spacing:.16em;
+  border-bottom:1.5px solid var(--ink);padding:2px 4px 8px}
+.masthead{display:flex;align-items:center;justify-content:space-between;padding:12px 6px 4px}
+.masthead h1{font:900 96px/1 'Playfair Display','Noto Serif',serif;letter-spacing:.01em;text-align:center;white-space:nowrap}
+.masthead svg{flex:none}
+.tagline{display:flex;align-items:center;gap:16px;border-top:1.5px solid var(--ink);border-bottom:4px double var(--ink);
+  padding:6px 0;font:600 15px 'Be Vietnam Pro',sans-serif;letter-spacing:.2em;justify-content:center;text-align:center}
+.tagline i{flex:1;height:1px;background:var(--ink);opacity:.55}
+.tagline span{white-space:nowrap}
+
+/* ---------- headline ---------- */
+.headline{padding:18px 0 14px;text-align:center}
+.kicker{display:inline-block;background:var(--red);color:#fff7e6;font:800 14.5px 'Be Vietnam Pro',sans-serif;
+  letter-spacing:.16em;padding:5px 16px}
+.headline h2{font:900 52px/1.02 'Playfair Display','Noto Serif',serif;margin:14px 0 10px;letter-spacing:-.005em}
+.headline h2 span{display:block}
+.headline h2 .big{font-size:78px;line-height:1.0;margin-top:2px}
+.headline h2 em{font-style:normal;color:var(--red)}
+.deck{font:400 20px/1.45 'Noto Serif',serif;max-width:1040px;margin:0 auto;color:#2c2923}
+.byline{margin-top:10px;font:600 13px 'Be Vietnam Pro',sans-serif;letter-spacing:.12em;color:var(--muted);
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:5px 0}
+
+/* ---------- band & infographic ---------- */
+.band{display:flex;justify-content:space-between;align-items:baseline;background:var(--ink);color:var(--paper);
+  font:800 15px 'Be Vietnam Pro',sans-serif;letter-spacing:.14em;padding:7px 16px}
+.band small{font:600 12.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.04em;opacity:.85}
+.info{margin-top:6px;border:2px solid var(--ink);border-top:0;background:rgba(255,255,255,.28)}
+.info svg{display:block;width:100%;height:auto}
+
+/* ---------- columns ---------- */
+.cols3{display:grid;grid-template-columns:1fr 1.5px 1fr 1.5px 1fr;column-gap:22px;margin-top:20px}
+.vr{background:var(--ink)}
+.art .k{font:800 12.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.18em;color:var(--red)}
+.art h3{font:900 29px/1.1 'Playfair Display','Noto Serif',serif;margin:4px 0 10px}
+.art p{text-align:justify;font-size:16px;line-height:1.5}
+.art p.first::first-letter{float:left;font:900 66px/.82 'Playfair Display',serif;padding:5px 9px 0 0;color:var(--red)}
+.art h5,.box h5{font:800 12.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.14em;margin:10px 0 4px;
+  border-bottom:1px solid var(--ink);padding-bottom:3px}
+ul{list-style:none}
+.art li,.box li.d{position:relative;padding-left:20px;margin:3px 0;text-align:left;font-size:15.5px;line-height:1.42}
+.art li::before,.box li.d::before{content:"";position:absolute;left:3px;top:.55em;width:8px;height:8px;background:var(--red);transform:rotate(45deg)}
+.eq{margin-top:9px;padding:6px 8px;border:1.5px dashed var(--ink);background:rgba(255,255,255,.4);
+  font:600 14.5px/1.4 'Be Vietnam Pro',sans-serif;text-align:center}
+.warn{margin-top:9px;padding:6px 10px;background:#f6d98a;border-left:5px solid var(--red);
+  font:600 13.5px/1.4 'Be Vietnam Pro',sans-serif}
+
+/* ---------- feature boxes ---------- */
+.features{margin-top:20px;column-gap:20px;grid-template-columns:1fr 1fr 1fr}
+.box{border:2px solid var(--ink);background:rgba(255,255,255,.33);display:flex;flex-direction:column}
+.box h4{background:var(--ink);color:var(--paper);font:800 13.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.1em;padding:7px 12px}
+.box .in{padding:10px 14px 12px}
+.box svg{display:block;width:100%;height:auto;margin-bottom:6px}
+.box p{font-size:15px;line-height:1.45;text-align:justify}
+.box li.d{font-size:14.5px;line-height:1.4;margin:2px 0}
+.steps{display:flex;align-items:center;gap:3px;margin-top:8px;flex-wrap:nowrap}
+.steps b{flex:1;text-align:center;background:var(--ink);color:var(--paper);font:800 10.8px/1.2 'Be Vietnam Pro',sans-serif;padding:5px 1px;border-radius:3px;white-space:nowrap}
+.steps i{font-style:normal;color:var(--red);font:800 13px 'Be Vietnam Pro';width:7px;text-align:center}
+
+/* ---------- bottom ---------- */
+.bottom{display:grid;grid-template-columns:1.9fr 1fr;gap:20px;margin-top:20px}
+.facts{border:2px solid var(--ink);background:rgba(255,255,255,.33)}
+.facts .g{display:grid;grid-template-columns:repeat(3,1fr);padding:10px 4px 12px}
+.fact{padding:0 14px;border-left:1.5px solid var(--ink)}
+.fact:first-child{border-left:0}
+.fact b{display:block;font:900 38px/1 'Playfair Display',serif;color:var(--red)}
+.fact p{font-size:14.5px;line-height:1.42;margin-top:5px;text-align:left}
+.fact .t{font:800 12.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.06em;display:block;margin-top:4px}
+.quiz{background:var(--ink);color:var(--paper);padding:0 0 12px;display:flex;flex-direction:column}
+.quiz h4{font:800 13.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.14em;padding:8px 14px;background:var(--red);color:#fff7e6}
+.quiz .q{padding:10px 16px 0;font-size:15.5px;line-height:1.45}
+.quiz .opts{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;padding:8px 16px 0;font:600 14px 'Be Vietnam Pro',sans-serif}
+.quiz .ans{padding:8px 16px 0;font:600 12.5px 'Be Vietnam Pro',sans-serif;opacity:.8}
+
+footer{margin-top:16px;border-top:3px double var(--ink);padding-top:7px;display:flex;justify-content:space-between;gap:20px;
+  font:600 12.5px/1.4 'Be Vietnam Pro',sans-serif;color:var(--muted)}
+.credit{text-align:center;margin-top:5px;font:600 8.5px/1 'Be Vietnam Pro',sans-serif;color:#8a8372;letter-spacing:.12em}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <span>SỐ 02</span>
+    <span>CHUYÊN ĐỀ: KHTN VÀ ĐỜI SỐNG · KẾT NỐI TƯƠNG LAI</span>
+    <span>NĂM HỌC 2026 – 2027</span>
+  </div>
+
+  <header class="masthead">
+    <svg width="104" height="104" viewBox="0 0 64 64">
+      <path d="M21 36 H43 L53 53 Q57 59 50 59 H14 Q7 59 11 53z" fill="#3f9a5c" opacity=".9"/>
+      <path d="M24 5 H40 M26 5 V26 L9 53 Q5 59 13 59 H51 Q59 59 55 53 L38 26 V5" fill="none" stroke="#1c1a16" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="29" cy="46" r="2.5" fill="#fff"/><circle cx="37" cy="42" r="2" fill="#fff"/><circle cx="33" cy="50" r="1.6" fill="#fff"/>
+    </svg>
+    <h1>BẢN TIN KHTN 8</h1>
+    <svg width="104" height="104" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1c1a16" stroke-width="2.6">
+        <ellipse cx="32" cy="32" rx="28" ry="10"/>
+        <ellipse cx="32" cy="32" rx="28" ry="10" transform="rotate(60 32 32)"/>
+        <ellipse cx="32" cy="32" rx="28" ry="10" transform="rotate(120 32 32)"/>
+      </g>
+      <circle cx="32" cy="32" r="6" fill="#b3261e"/>
+      <circle cx="60" cy="32" r="3.6" fill="#1f5f99"/><circle cx="18" cy="8" r="3.6" fill="#1f5f99"/><circle cx="18" cy="56" r="3.6" fill="#1f5f99"/>
+    </svg>
+  </header>
+  <div class="tagline"><i></i><span>TỜ BÁO CỦA NHỮNG NHÀ KHOA HỌC NHÍ</span><i></i></div>
+
+  <section class="headline">
+    <span class="kicker">CHUYÊN ĐỀ · KHOA HỌC TỰ NHIÊN VÀ ĐỜI SỐNG</span>
+    <h2>
+      <span>ỨNG DỤNG KHOA HỌC TỰ NHIÊN</span>
+      <span class="big">TRONG ĐỜI SỐNG –</span>
+      <span class="big"><em>KẾT NỐI TƯƠNG LAI</em></span>
+    </h2>
+    <p class="deck">Từ bữa cơm hằng ngày, chiếc ổ điện trong nhà đến thùng rác ở góc phố, kiến thức KHTN 8 hiện diện ở khắp mọi nơi. Bản tin hôm nay dẫn bạn đi qua sáu lĩnh vực ứng dụng – và nhìn thấy những cánh cửa nghề nghiệp đang chờ phía trước.</p>
+    <div class="byline">BIÊN SOẠN: BAN KHOA HỌC LỚP 8 &nbsp;|&nbsp; THEO CHƯƠNG TRÌNH KHOA HỌC TỰ NHIÊN 8 &nbsp;|&nbsp; THỜI GIAN ĐỌC: 6 PHÚT</div>
+  </section>
+
+  <!-- ============ INFOGRAPHIC ============ -->
+  <div class="band"><span>ĐỒ HỌA · TỪ LỚP HỌC ĐẾN ĐỜI SỐNG VÀ TƯƠNG LAI</span><small>Ba chặng của một nhà khoa học nhí</small></div>
+  <div class="info"><div id="hero"></div></div>
+
+  <!-- ============ 3 BÀI CHÍNH ============ -->
+  <section class="cols3">
+    <article class="art">
+      <div class="k">01 · SINH HỌC CƠ THỂ NGƯỜI</div>
+      <h3>Hiểu cơ thể để sống khỏe</h3>
+      <p class="first">Cơ thể người là một hệ thống phối hợp nhịp nhàng: hệ tiêu hóa biến thức ăn thành chất dinh dưỡng, hệ tuần hoàn đưa chất đến từng tế bào, hệ thần kinh điều khiển mọi hoạt động. Hiểu cách chúng làm việc giúp ta ăn uống, vận động và phòng bệnh đúng cách.</p>
+      <h5>ỨNG DỤNG TRONG ĐỜI SỐNG</h5>
+      <ul>
+        <li>Ăn đủ nhóm chất, uống đủ nước, ngủ đủ giấc.</li>
+        <li>Rửa tay bằng xà phòng để loại bỏ vi khuẩn gây bệnh.</li>
+        <li>Tiêm vắc-xin giúp cơ thể tạo sẵn kháng thể.</li>
+        <li>Vận động mỗi ngày cho tim, phổi và xương chắc khỏe.</li>
+      </ul>
+      <div class="eq">Tinh bột + đạm + béo + vitamin + khoáng <span class="ar">→</span> khỏe mạnh</div>
+    </article>
+    <div class="vr"></div>
+    <article class="art">
+      <div class="k">02 · VẬT LÍ · NĂNG LƯỢNG VÀ ĐIỆN</div>
+      <h3>Dùng điện thông minh, an toàn</h3>
+      <p class="first">Năng lượng không tự sinh ra hay mất đi, nó chỉ chuyển hóa từ dạng này sang dạng khác: điện năng thành ánh sáng ở bóng đèn, thành nhiệt ở bàn là, thành chuyển động ở quạt. Biết điều đó, ta vừa tiết kiệm điện vừa tránh được những tai nạn đáng tiếc.</p>
+      <h5>ỨNG DỤNG TRONG ĐỜI SỐNG</h5>
+      <ul>
+        <li>Dùng đèn LED, tắt thiết bị khi không sử dụng.</li>
+        <li>Không chạm ổ điện, dây điện hở; tay ướt không cắm điện.</li>
+        <li>Điện mặt trời, điện gió là nguồn năng lượng sạch, tái tạo.</li>
+      </ul>
+      <div class="eq">Điện năng <span class="ar">→</span> quang năng (đèn) · cơ năng (quạt) · nhiệt năng (bàn là)</div>
+      <div class="warn">⚠ Có người bị điện giật: ngắt nguồn điện trước, rồi gọi người lớn – không chạm trực tiếp.</div>
+    </article>
+    <div class="vr"></div>
+    <article class="art">
+      <div class="k">03 · HÓA HỌC QUANH TA</div>
+      <h3>Hóa học ngay trong căn bếp và nhà tắm</h3>
+      <p class="first">Giấm và chanh chứa acid nhẹ nên tẩy được cặn vôi, khử mùi tanh của cá. Baking soda có tính kiềm nhẹ nên trung hòa vị chua và giúp bánh nở xốp. Xà phòng làm sạch vết dầu mỡ. Thử nhận biết acid – base bằng nước bắp cải tím là một thí nghiệm vui tại nhà.</p>
+      <h5>ỨNG DỤNG TRONG ĐỜI SỐNG</h5>
+      <ul>
+        <li>Đọc nhãn, cất hóa chất xa tầm tay trẻ nhỏ.</li>
+        <li>Không trộn thuốc tẩy với chất tẩy rửa khác vì có thể sinh khí độc.</li>
+      </ul>
+      <div class="eq">Giấm + cặn vôi (CaCO<sub>3</sub>) <span class="ar">→</span> muối + nước + CO<sub>2</sub>↑</div>
+    </article>
+  </section>
+
+  <!-- ============ 3 HỘP CHUYÊN ĐỀ ============ -->
+  <section class="cols3 features">
+    <div class="box">
+      <h4>04 · MÔI TRƯỜNG XANH</h4>
+      <div class="in">
+        <div id="svgEco"></div>
+        <p>Phân loại rác thành hữu cơ, tái chế và rác còn lại giúp giảm lượng rác phải chôn lấp. Cây xanh quang hợp, hấp thụ CO<sub>2</sub> và nhả O<sub>2</sub> cho bầu không khí.</p>
+        <ul style="margin-top:5px">
+          <li class="d">Dùng túi vải, bình nước cá nhân để giảm rác nhựa.</li>
+          <li class="d">Khóa vòi nước khi không dùng; đi bộ, đi xe buýt để giảm khí thải CO<sub>2</sub>.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="box">
+      <h4>05 · CÔNG NGHỆ &amp; KỸ THUẬT</h4>
+      <div class="in">
+        <div id="svgTech"></div>
+        <ul>
+          <li class="d">Đòn bẩy giúp nâng vật nặng bằng lực nhỏ: kéo, xe cút kít.</li>
+          <li class="d">Cùng một lực, diện tích càng nhỏ thì áp suất càng lớn – vì thế dao sắc cắt dễ hơn.</li>
+          <li class="d">Lực đẩy Archimedes giúp tàu thuyền nổi trên mặt nước.</li>
+          <li class="d">Bình giữ nhiệt hạn chế truyền nhiệt nên giữ nước nóng lâu.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="box">
+      <h4>06 · NGHỀ NGHIỆP TƯƠNG LAI</h4>
+      <div class="in">
+        <div id="svgJob"></div>
+        <p>Khoa học mở ra rất nhiều nghề. Dù chọn con đường nào, phương pháp tìm hiểu thế giới của nhà khoa học vẫn là chìa khóa:</p>
+        <div class="steps"><b>Quan sát</b><i>›</i><b>Đặt câu hỏi</b><i>›</i><b>Thí nghiệm</b><i>›</i><b>Kết luận</b></div>
+        <ul style="margin-top:7px">
+          <li class="d">Làm dự án STEM theo nhóm; dùng công nghệ và AI một cách an toàn, có trách nhiệm.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DƯỚI CÙNG ============ -->
+  <section class="bottom">
+    <div class="facts">
+      <div class="band" style="font-size:13.5px"><span>BẠN CÓ BIẾT?</span></div>
+      <div class="g">
+        <div class="fact">
+          <b>5,6</b><span class="t">NƯỚC MƯA CŨNG HƠI ACID</span>
+          <p>Nước mưa bình thường có pH ≈ 5,6 vì hòa tan khí CO<sub>2</sub>. Mưa có pH thấp hơn mức này được gọi là mưa acid.</p>
+        </div>
+        <div class="fact">
+          <b>≈ 3%</b><span class="t">NƯỚC NGỌT RẤT QUÝ</span>
+          <p>Phần lớn nước trên Trái Đất là nước mặn; chỉ khoảng 3% là nước ngọt. Tiết kiệm nước là việc ai cũng làm được.</p>
+        </div>
+        <div class="fact">
+          <b>1928</b><span class="t">KHOA HỌC CỨU SỐNG NGƯỜI</span>
+          <p>Alexander Fleming phát hiện penicillin vào năm 1928, mở đầu kỷ nguyên dùng thuốc kháng sinh.</p>
+        </div>
+      </div>
+    </div>
+    <div class="quiz">
+      <h4>THỬ SỨC NHANH</h4>
+      <div class="q">Vật dụng nào dưới đây hoạt động dựa trên nguyên lý <b>đòn bẩy</b>?</div>
+      <div class="opts"><span>A. Bình giữ nhiệt</span><span>B. Kéo cắt giấy</span><span>C. Pin mặt trời</span><span>D. Phích cắm điện</span></div>
+      <div class="ans">Đáp án: B – kéo gồm hai đòn bẩy ghép lại.</div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Nội dung tổng hợp theo chương trình Khoa học tự nhiên 8. Khi làm thí nghiệm, hãy đeo kính, găng tay và có người lớn hướng dẫn.</span>
+    <span style="white-space:nowrap">© Bản tin KHTN 8 · Số 02</span>
+  </footer>
+  <div class="credit">POSTER ĐƯỢC THIẾT KẾ BỞI CLAUDE (ANTHROPIC)</div>
+</div>
+
+<script src="art.js"></script>
+<script src="scenes.js"></script>
+<script>
+const INK = '#1c1a16';
+const T = (x, y, s, w, fill, t, a = 'middle', ls = 0) =>
+  `<text x="${x}" y="${y}" text-anchor="${a}" font-family="Be Vietnam Pro" font-weight="${w}" font-size="${s}" fill="${fill}" letter-spacing="${ls}">${t}</text>`;
+
+/* ---------- đồ họa chính: 3 chặng ---------- */
+function heroSVG() {
+  const panel = (x, w, title) => `
+    <rect x="${x}" y="14" width="${w}" height="330" rx="14" fill="#fbf6e6" stroke="${INK}" stroke-width="2.4"/>
+    <path d="M${x} 52V28a14 14 0 0 1 14-14H${x + w - 14}a14 14 0 0 1 14 14V52Z" fill="${INK}"/>
+    ${T(x + w / 2, 40, 15, 800, '#f2e9d0', title, 'middle', 1.6)}`;
+  const tag = (x, y, w, txt, c) => `
+    <rect x="${x}" y="${y}" width="${w}" height="27" rx="13.5" fill="#fff" stroke="${INK}" stroke-width="1.6"/>
+    <circle cx="${x + 14}" cy="${y + 13.5}" r="4.5" fill="${c}"/>${T(x + 28, y + 18.5, 13, 700, INK, txt, 'start')}`;
+  const arrow = cx => `<polygon points="${cx - 14},164 ${cx + 2},164 ${cx + 2},148 ${cx + 20},180 ${cx + 2},212 ${cx + 2},196 ${cx - 14},196" fill="#b3261e" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`;
+
+  /* chặng 1: lớp học */
+  const board = `
+    <rect x="30" y="66" width="308" height="112" rx="8" fill="#2f5d50" stroke="#a9743f" stroke-width="7"/>
+    <g font-family="Be Vietnam Pro" font-weight="600" fill="#f4f4ea" text-anchor="middle">
+      <text x="184" y="100" font-size="21">D = m / V &#160;&#160; p = F / S</text>
+      <text x="184" y="132" font-size="18">HCl + NaOH <tspan font-family="DejaVu Sans">→</tspan> NaCl + H<tspan baseline-shift="sub" font-size="12">2</tspan>O</text>
+      <text x="184" y="162" font-size="17">Q = m · c · Δt &#160;&#160; pH &lt; 7 : acid</text>
+    </g>
+`;
+  const p1 = panel(14, 340, '1 · TRONG LỚP HỌC') + board +
+    tag(30, 192, 308, 'Phản ứng hóa học · Acid – Base – pH', '#8b5cc7') +
+    tag(30, 224, 308, 'Khối lượng riêng · Áp suất · Lực', '#2f7fd6') +
+    tag(30, 256, 308, 'Điện · Nhiệt · Năng lượng', '#f08a00') +
+    tag(30, 288, 308, 'Cơ thể người · Sinh vật và môi trường', '#35a24f') +
+    T(184, 336, 12, 700, '#5b5547', 'Kiến thức nền tảng của KHTN 8');
+
+  /* chặng 2: đời sống – 6 ô */
+  const tiles = [
+    [heart(0, 0, 1.9, '#e84a70'), 'Sức khỏe', 'rửa tay, vắc-xin'],
+    [apple(0, 0, 1.55), 'Dinh dưỡng', 'ăn đủ chất'],
+    [bulb(0, 0, 1.4, true), 'Điện', 'tiết kiệm, an toàn'],
+    [flask(0, 0, 1.3, '#9b6fe0'), 'Hóa học', 'giấm, baking soda'],
+    [sapling(0, 4, 1.2), 'Môi trường', 'phân loại rác'],
+    [G(-6, -6, 1, gear(0, 0, 15, '#ffb300') + gear(17, 15, 9, '#4fc3f7', 15)), 'Công nghệ', 'đòn bẩy, áp suất']
+  ];
+  const p2 = panel(398, 356, '2 · TRONG ĐỜI SỐNG') + tiles.map(([ic, name, sub], i) => {
+    const x = 410 + (i % 3) * 112, y = 66 + Math.floor(i / 3) * 126;
+    return `<rect x="${x}" y="${y}" width="104" height="118" rx="10" fill="#fff" stroke="${INK}" stroke-width="1.8"/>
+      <g transform="translate(${x + 52} ${y + 46})">${ic}</g>
+      ${T(x + 52, y + 92, 14, 800, INK, name)}${T(x + 52, y + 107, 10.5, 600, '#5b5547', sub)}`;
+  }).join('') + T(576, 334, 12, 700, '#5b5547', 'Ứng dụng quanh ta, mỗi ngày');
+
+  /* chặng 3: tương lai */
+  const sky = `
+    <rect x="812" y="66" width="312" height="112" rx="8" fill="#1f2f5c" stroke="${INK}" stroke-width="2"/>
+    ${[[836, 84, 1.0], [1010, 82, .8], [1100, 100, 1.1], [880, 160, .8], [1080, 164, .9]].map(([x, y, s]) => sparkle(x, y, s, '#fff3a0')).join('')}
+    ${planet(860, 118, 14)}${rocket(985, 122, 1.45, 28)}${star(1070, 126, 1.1, '#ffd23f', 12)}`;
+  const p3 = panel(798, 340, '3 · TRONG TƯƠNG LAI') + sky +
+    tag(812, 186, 312, 'Bác sĩ · Dược sĩ · Nhà dinh dưỡng', '#e8579a') +
+    tag(812, 216, 312, 'Kỹ sư năng lượng tái tạo', '#f08a00') +
+    tag(812, 246, 312, 'Nhà hóa học · Kỹ sư vật liệu', '#8b5cc7') +
+    tag(812, 276, 312, 'Chuyên gia môi trường', '#35a24f') +
+    tag(812, 306, 312, 'Kỹ sư robot · trí tuệ nhân tạo (AI)', '#2f7fd6');
+
+  return `<svg viewBox="0 0 1152 384" xmlns="http://www.w3.org/2000/svg" font-family="Be Vietnam Pro, sans-serif">
+    ${p1}${arrow(376)}${p2}${arrow(776)}${p3}
+    ${T(576, 370, 14.5, 700, '#b3261e', 'Kiến thức trong lớp học chính là chìa khóa mở ra cuộc sống – và nghề nghiệp – của chính bạn.')}
+  </svg>`;
+}
+
+/* ---------- hộp 04: môi trường ---------- */
+function ecoSVG() {
+  return `<svg viewBox="0 0 330 150" xmlns="http://www.w3.org/2000/svg" font-family="Be Vietnam Pro, sans-serif">
+    <rect x="4" y="4" width="322" height="142" rx="10" fill="#e4f0d6" stroke="${INK}" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <path d="M14 98H316" stroke="#9fbf86" stroke-width="3" stroke-linecap="round"/>
+    ${bin(58, 34, 44, 64, '#43a047', 'leaf')}${bin(118, 34, 44, 64, '#2f7fd6', 'loop')}${bin(178, 34, 44, 64, '#78909c', 'dot')}
+    ${T(58, 120, 12.5, 800, INK, 'Hữu cơ')}${T(118, 120, 12.5, 800, INK, 'Tái chế')}${T(178, 120, 12.5, 800, INK, 'Còn lại')}
+    ${globe(296, 30, 12)}${sapling(258, 68, 1.4)}${T(258, 120, 12.5, 800, '#2f7d4f', 'Trồng cây')}
+    ${sparkle(30, 28, .9, '#fff')}${sparkle(300, 66, .8, '#fff')}
+  </svg>`;
+}
+
+/* ---------- hộp 05: công nghệ & kỹ thuật ---------- */
+function techSVG() {
+  const lever = `
+    <g transform="translate(58 58)">
+      <path d="M-13 36H13L0 12Z" fill="#8d6e63" stroke="${OL}" stroke-width="2" stroke-linejoin="round"/>
+      <g transform="rotate(13 0 12)">
+        <rect x="-48" y="6" width="96" height="9" rx="3" fill="#e0a867" stroke="${OL}" stroke-width="2"/>
+        <rect x="-42" y="-16" width="24" height="22" rx="3" fill="#90a4ae" stroke="${OL}" stroke-width="2"/>
+        <text x="-30" y="0" text-anchor="middle" font-family="Be Vietnam Pro" font-weight="800" font-size="9" fill="#fff">nặng</text>
+      </g>
+      <path d="M40 -22V-2" stroke="#b3261e" stroke-width="3.4" stroke-linecap="round"/><path d="M33 -6L40 4L47 -6Z" fill="#b3261e"/>
+    </g>`;
+  const boat = `
+    <g transform="translate(165 54)">
+      <rect x="-48" y="26" width="96" height="26" rx="4" fill="#8fd0f2" fill-opacity=".85" stroke="${INK}" stroke-width="1.6"/>
+      <path d="M-46 28Q-35 20 -24 28T0 28T24 28T46 28" fill="none" stroke="${INK}" stroke-width="1.6"/>
+      <path d="M0 26V-14L22 14H0" fill="#fff" stroke="${OL}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M-26 20H28L20 34H-18Z" fill="#ff8a65" stroke="${OL}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M0 50V42" stroke="#b3261e" stroke-width="3" stroke-linecap="round"/><path d="M-6 44L0 36L6 44Z" fill="#b3261e"/>
+      <text x="12" y="49" font-family="Be Vietnam Pro" font-weight="800" font-size="11" fill="#b3261e">F<tspan baseline-shift="sub" font-size="8">A</tspan></text>
+    </g>`;
+  const thermos = `
+    <g transform="translate(275 66)">
+      <path d="M-6 -42Q-12 -50 -6 -56M4 -42Q-2 -50 4 -56" stroke="#9a9484" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <rect x="-13" y="-36" width="26" height="10" rx="3" fill="#ef5350" stroke="${OL}" stroke-width="2"/>
+      <rect x="-17" y="-27" width="34" height="68" rx="9" fill="#4fc3f7" stroke="${OL}" stroke-width="2.2"/>
+      <rect x="-12" y="-22" width="24" height="58" rx="6" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2" stroke-dasharray="3 3"/>
+      <path d="M-9 -12V30" stroke="#fff" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>
+    </g>`;
+  return `<svg viewBox="0 0 330 150" xmlns="http://www.w3.org/2000/svg" font-family="Be Vietnam Pro, sans-serif">
+    <rect x="4" y="4" width="322" height="142" rx="10" fill="#e3ecf8" stroke="${INK}" stroke-width="1.5" stroke-dasharray="5 4"/>
+    ${lever}${boat}${thermos}
+    ${T(58, 124, 11.5, 800, INK, 'Đòn bẩy')}${T(163, 124, 11, 800, INK, 'Lực đẩy Archimedes')}${T(277, 124, 11.5, 800, INK, 'Bình giữ nhiệt')}
+    ${T(58, 138, 10.5, 600, '#5b5547', 'lực nhỏ, vật nặng')}${T(165, 138, 10.5, 600, '#5b5547', 'vật nổi trên nước')}${T(275, 138, 10.5, 600, '#5b5547', 'giữ nóng, giữ lạnh')}
+  </svg>`;
+}
+
+/* ---------- hộp 06: nghề nghiệp ---------- */
+function jobSVG() {
+  const jobs = [
+    [heart(0, 1, 1.9, '#e84a70'), 'Bác sĩ', 'dược sĩ'],
+    [solar(0, -4, .9), 'Kỹ sư', 'năng lượng'],
+    [flask(0, 2, 1.5, '#9b6fe0'), 'Nhà', 'hóa học'],
+    [tree(0, 14, .85), 'Chuyên gia', 'môi trường'],
+    [robot(0, 4, .95), 'Kỹ sư', 'robot, AI']
+  ];
+  return `<svg viewBox="0 0 330 150" xmlns="http://www.w3.org/2000/svg" font-family="Be Vietnam Pro, sans-serif">
+    <rect x="4" y="4" width="322" height="142" rx="10" fill="#f6e3dc" stroke="${INK}" stroke-width="1.5" stroke-dasharray="5 4"/>
+    ${jobs.map(([ic, a, b], i) => {
+      const cx = 38 + i * 63.5;
+      return `<circle cx="${cx}" cy="50" r="28" fill="#fff" stroke="${INK}" stroke-width="2"/>
+        <g transform="translate(${cx} 50)">${ic}</g>${T(cx, 102, 12, 800, INK, a)}${T(cx, 116, 11, 600, '#5b5547', b)}`;
+    }).join('')}
+    ${T(165, 138, 11, 800, '#b3261e', 'Mỗi nghề đều bắt đầu từ một câu hỏi “vì sao?”')}
+  </svg>`;
+}
+
+document.getElementById('hero').innerHTML = heroSVG();
+document.getElementById('svgEco').innerHTML = ecoSVG();
+document.getElementById('svgTech').innerHTML = techSVG();
+document.getElementById('svgJob').innerHTML = jobSVG();
+</script>
+</body>
+</html>
