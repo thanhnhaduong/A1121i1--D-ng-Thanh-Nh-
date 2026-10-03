@@ -76,8 +76,7 @@ const saplingG = pot => `${rect(-1.8, -16, 3.6, 22, 1.8, M.grn)}
 const beakerG = liq => `${path('M-18 -24H18V18Q18 28 8 28H-8Q-18 28 -18 18Z', '#e7f0f3')}${path('M-18 -2H18V18Q18 28 8 28H-8Q-18 28 -18 18Z', liq)}${rect(-22, -27, 44, 6, 3, M.gray)}${[-14, -6, 2].map(y => rect(-18, y, 9, 2.4, 1, '#a9b3b8')).join('')}`;
 /* cây non đang được trồng xuống đất, có xẻng */
 const plantG = () => `${ell(0, 24, 30, 9, '#8b6a4a')}${rect(-1.8, -18, 3.6, 40, 1.8, M.grn)}
-  ${path('M0 -4C-20 -4 -28 -18 -26 -28C-10 -28 0 -18 0 -4Z', M.grn)}${path('M0 -12C18 -12 26 -26 24 -36C8 -36 0 -26 0 -12Z', M.grnL)}
-  ${rect(31, -10, 5, 38, 2.5, M.wood)}${rect(26, -12, 15, 5, 2.5, M.woodD)}${path('M26 26H41L39 42Q33.5 48 28 42Z', M.grayL)}`;
+  ${path('M0 -4C-20 -4 -28 -18 -26 -28C-10 -28 0 -18 0 -4Z', M.grn)}${path('M0 -12C18 -12 26 -26 24 -36C8 -36 0 -26 0 -12Z', M.grnL)}`;
 
 /* thùng rác có bánh xe: tách rõ với cốc nước */
 const binG = (c, cD, glyph) => `${circ(-9, 32, 4.6, M.gray)}${circ(9, 32, 4.6, M.gray)}${rect(-6, -35, 12, 7, 3.5, cD)}
@@ -93,7 +92,7 @@ const recycleG = () => {
   };
   return arrow(-80, 70) + arrow(100, 250);
 };
-const chipBagG = () => path('M-7 -2L-4.5 1L-2 -2L0.5 1L3 -2L5.5 1L7 -2V17L4.5 20L2 17L-0.5 20L-3 17L-5.5 20L-7 17Z', '#fff', 'transform="translate(0 4)"');
+const chipBagG = () => path('M-7 -2L-4.5 1L-2 -2L0.5 1L3 -2L5.5 1L7 -2V17L4.5 20L2 17L-0.5 20L-3 17L-5.5 20L-7 17Z', '#fff', 'transform="translate(0 1) scale(1.25)"');
 
 /* cái kéo: hai tay đòn bắt chéo ở chốt, tay cầm gắn liền lưỡi */
 const scissorsG = () => `
@@ -138,6 +137,7 @@ const bikeG = () => `${ring(-30, 0, 24, 19.5, M.gray)}${ring(30, 0, 24, 19.5, M.
 function scene1() {
   const cx = 124, cy = 106;
   return `${blob(M.roseL, .45)}
+  <g transform="translate(124 106) scale(.88) translate(-124 -106)">
   ${circ(cx, cy, 86, M.white)}${circ(cx, cy, 73, '#f1e8d3')}
   ${sector(cx, cy, 65, 180, 360, '#6aa56e', 3.5)}${sector(cx, cy, 65, 90, 180, '#efd7a1', 3.5)}${sector(cx, cy, 65, 0, 90, '#e4a58a', 3.5)}
   ${T(92, 78, 1, 0, `${rect(-3, 4, 6, 12, 3, '#86b97b')}${circ(-8, 0, 9, '#2f6e44')}${circ(8, 0, 9, '#2f6e44')}${circ(0, -8, 10, '#3b8250')}`)}
@@ -145,6 +145,7 @@ function scene1() {
   ${[[112, 96], [128, 94], [150, 98]].map(([x, y]) => circ(x, y, 6.5, '#f08a3c') + circ(x, y, 3, '#f6b06c')).join('')}
   ${ell(92, 140, 25, 15, M.white)}${[[82, 137], [92, 133], [102, 138], [88, 144], [98, 145]].map(([x, y]) => ell(x, y, 3, 1.6, '#e3cf9d', 20)).join('')}
   ${ell(152, 138, 24, 18, M.white)}${circ(152, 138, 8, '#f2b632')}
+  </g>
   <!-- cốc nước -->
   ${path('M236 70H282L277 146Q276.5 152 271 152H247Q241.5 152 241 146Z', '#e3eef2')}
   ${path('M238.4 98H279.6L277 146Q276.5 152 271 152H247Q241.5 152 241 146Z', '#79b3d4')}
@@ -214,17 +215,17 @@ function scene4() {
   <!-- túi vải + bình nước -->
   ${bar('M38 84Q38 50 62 50Q86 50 86 84', M.woodD, 7)}
   ${rect(26, 80, 72, 82, 8, '#efdfb8')}${T(62, 122, .9, 0, leafG(M.grn, M.grnD))}
-  ${rect(112, 96, 26, 66, 10, '#6aa0c4')}${rect(118, 82, 14, 18, 4, '#3f6a8c')}${rect(112, 118, 26, 8, 0, '#cfe3ef')}
+  ${rect(112, 96, 26, 66, 10, '#8da4af')}${rect(118, 82, 14, 18, 4, '#4f6a77')}${ring(125, 76, 7, 3.6, M.ter)}${rect(112, 122, 26, 7, 0, '#d6e0e5')}
   <!-- 3 thùng rác có bánh xe + rác tương ứng -->
-  ${T(190, 126, 1.15, 0, binG(M.grn, M.grnD, T(0, 8, .58, 0, leafG('#fff', '#dcebd5'))))}
-  ${T(248, 126, 1.15, 0, binG(M.blu, M.bluD, recycleG()))}
-  ${T(306, 126, 1.15, 0, binG(M.gray, '#434f56', chipBagG()))}
-  ${T(190, 60, 1, 0, path('M-12 -6C-18 6 -10 20 0 18C10 20 18 6 12 -6C6 -12 -6 -12 -12 -6Z', '#d9503f') + path('M-9 -2C-12 6 -8 14 0 12C8 14 12 6 9 -2C4 4 -4 4 -9 -2Z', '#f6ecd8') + circ(0, 2, 2, '#6b4a2a') + bar('M0 -8Q2 -16 8 -18', M.terD, 3))}
-  ${T(248, 58, 1, 14, rect(-10, -14, 20, 38, 8, '#9fd0e6') + rect(-6, -22, 12, 10, 3, '#4f87bd') + rect(-10, -2, 20, 8, 0, '#d7ecf5'))}
-  ${T(306, 60, 1, -10, path('M-14 -16L14 -16L12 18L-12 18Z', M.mus) + path('M-14 -16L14 -16L13 -8L-13 -8Z', M.musD) + rect(-8, 0, 16, 8, 2, M.musL))}
+  ${T(182, 126, 1.1, 0, binG(M.grn, M.grnD, T(0, 8, .62, 0, leafG('#fff', '#dcebd5'))))}
+  ${T(238, 126, 1.1, 0, binG(M.blu, M.bluD, recycleG()))}
+  ${T(294, 126, 1.1, 0, binG(M.gray, '#434f56', chipBagG()))}
+  ${T(182, 60, 1, 0, path('M-12 -6C-18 6 -10 20 0 18C10 20 18 6 12 -6C6 -12 -6 -12 -12 -6Z', '#d9503f') + path('M-9 -2C-12 6 -8 14 0 12C8 14 12 6 9 -2C4 4 -4 4 -9 -2Z', '#f6ecd8') + circ(0, 2, 2, '#6b4a2a') + bar('M0 -8Q2 -16 8 -18', M.terD, 3))}
+  ${T(238, 58, 1, 14, rect(-10, -14, 20, 38, 8, '#9fd0e6') + rect(-6, -22, 12, 10, 3, '#4f87bd') + rect(-10, -2, 20, 8, 0, '#d7ecf5'))}
+  ${T(294, 60, 1, -10, path('M-14 -16L14 -16L12 18L-12 18Z', M.mus) + path('M-14 -16L14 -16L13 -8L-13 -8Z', M.musD) + rect(-8, 0, 16, 8, 2, M.musL))}
   <!-- trồng thêm cây + xe đạp -->
-  ${T(354, 128, 1.05, 0, plantG())}
-  ${T(446, 146, .85, 0, bikeG())}`;
+  ${T(364, 128, 1.0, 0, plantG())}
+  ${T(446, 146, .8, 0, bikeG())}`;
 }
 
 /* ---------- 5 · Công nghệ & kĩ thuật ---------- */
@@ -272,26 +273,30 @@ function scene6() {
 /* ---------- trái tim giữa trang ---------- */
 function heartCenter() {
   return `<svg viewBox="0 0 250 330" xmlns="http://www.w3.org/2000/svg" font-family="M PLUS Rounded 1c, sans-serif">
+    <g filter="url(#rough)">
     <path d="M125 62C121 40 128 20 146 12C160 28 158 52 125 62Z" fill="${M.grn}"/>
     <path d="M125 66C108 56 96 36 78 30C76 50 92 70 125 66Z" fill="${M.grnL}"/>
     <path d="M125 84V58" stroke="${M.grn}" stroke-width="5" stroke-linecap="round"/>
     <path d="M125 238C28 172 6 112 32 78C56 50 100 60 125 96C150 60 194 50 218 78C244 112 222 172 125 238Z" fill="#e9a8ab"/>
-    <g text-anchor="middle" fill="${M.ink}" font-weight="900">
-      <text x="125" y="140" font-size="56" fill="${M.rose}">6</text>
-      <text x="125" y="170" font-size="25">ứng dụng</text>
-      <text x="125" y="198" font-size="25">của KHTN</text>
     </g>
+    <g text-anchor="middle" fill="${M.ink}" font-weight="900">
+      <text x="125" y="128" font-size="56" fill="${M.rose}">6</text>
+      <text x="125" y="157" font-size="25">ứng dụng</text>
+      <text x="125" y="184" font-size="25">của KHTN</text>
+    </g>
+    <g filter="url(#rough)">
     <path d="M125 322C70 322 28 296 20 244C70 248 112 276 125 322Z" fill="${M.grn}"/>
     <path d="M125 322C180 322 222 296 230 244C180 248 138 276 125 322Z" fill="${M.grnL}"/>
+    </g>
   </svg>`;
 }
 
 /* ---------- biểu tượng cho dải cam kết ---------- */
 const pledgeIcons = {
-  health: `<svg viewBox="-34 -34 68 68">${heartG(M.rose)}</svg>`,
-  energy: `<svg viewBox="-34 -34 68 68">${path('M-9 14C-9 7 -20 3 -20 -9A20 20 0 1 1 20 -9C20 3 9 7 9 14Z', '#efb93a')}${rect(-9, 14, 18, 6, 3, M.gray)}${rect(-6.5, 21, 13, 5, 2.5, M.gray)}</svg>`,
-  chem: `<svg viewBox="-34 -34 68 68">${flaskG(M.plum)}</svg>`,
-  eco: `<svg viewBox="-34 -38 68 72">${saplingG(M.ter)}</svg>`,
-  tech: `<svg viewBox="-34 -34 68 68">${gearG(M.blu)}</svg>`,
-  future: `<svg viewBox="-34 -40 68 80">${rocketG()}</svg>`
+  health: `<svg viewBox="-34 -34 68 68"><g filter="url(#rough-sm)">${heartG(M.rose)}</g></svg>`,
+  energy: `<svg viewBox="-34 -34 68 68"><g filter="url(#rough-sm)">${path('M-9 14C-9 7 -20 3 -20 -9A20 20 0 1 1 20 -9C20 3 9 7 9 14Z', '#efb93a')}${rect(-9, 14, 18, 6, 3, M.gray)}${rect(-6.5, 21, 13, 5, 2.5, M.gray)}</g></svg>`,
+  chem: `<svg viewBox="-34 -34 68 68"><g filter="url(#rough-sm)">${flaskG(M.plum)}</g></svg>`,
+  eco: `<svg viewBox="-34 -38 68 72"><g filter="url(#rough-sm)">${saplingG(M.ter)}</g></svg>`,
+  tech: `<svg viewBox="-34 -34 68 68"><g filter="url(#rough-sm)">${gearG(M.blu)}</g></svg>`,
+  future: `<svg viewBox="-34 -40 68 80"><g filter="url(#rough-sm)">${rocketG()}</g></svg>`
 };
