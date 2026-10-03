@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Bản tin KHTN 8 – Acid, Base và thang pH</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{
+  --paper:#f2e9d0; --paper2:#ebe0c0; --ink:#1c1a16; --muted:#5b5547;
+  --red:#b3261e; --blue:#1f5f99; --green:#2f7d4f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--paper)}
+body{width:1240px;color:var(--ink);font-family:'Noto Serif','Liberation Serif',serif;font-size:16px;line-height:1.5}
+sub,sup{font-size:.68em;line-height:0}
+.page{position:relative;padding:34px 46px 26px;
+  background:
+   radial-gradient(ellipse at 50% 40%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%),
+   radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 55%, rgba(120,90,30,.22) 100%),
+   var(--paper);}
+.page::before{content:"";position:absolute;inset:14px;border:3px double var(--ink);pointer-events:none}
+.page::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .22 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");}
+
+/* ---------- top bar & masthead ---------- */
+.topbar{display:flex;justify-content:space-between;align-items:center;
+  font:800 13px 'Be Vietnam Pro',sans-serif;letter-spacing:.16em;
+  border-bottom:1.5px solid var(--ink);padding:2px 4px 8px}
+.masthead{display:flex;align-items:center;justify-content:space-between;padding:12px 6px 4px}
+.masthead h1{font:900 96px/1 'Playfair Display','Noto Serif',serif;letter-spacing:.01em;text-align:center;white-space:nowrap}
+.masthead svg{flex:none}
+.tagline{display:flex;align-items:center;gap:16px;border-top:1.5px solid var(--ink);border-bottom:4px double var(--ink);
+  padding:6px 0;font:600 15px 'Be Vietnam Pro',sans-serif;letter-spacing:.2em;justify-content:center;text-align:center}
+.tagline i{flex:1;height:1px;background:var(--ink);opacity:.55}
+.tagline span{white-space:nowrap}
+
+/* ---------- headline ---------- */
+.headline{padding:18px 0 14px;text-align:center}
+.kicker{display:inline-block;background:var(--red);color:#fff7e6;font:800 14.5px 'Be Vietnam Pro',sans-serif;
+  letter-spacing:.16em;padding:5px 16px}
+.headline h2{font:900 70px/1.04 'Playfair Display','Noto Serif',serif;margin:14px 0 10px;letter-spacing:-.005em}
+.headline h2 em{font-style:normal;color:var(--red)}
+.deck{font:400 20.5px/1.45 'Noto Serif',serif;max-width:1020px;margin:0 auto;color:#2c2923}
+.byline{margin-top:10px;font:600 13px 'Be Vietnam Pro',sans-serif;letter-spacing:.12em;color:var(--muted);
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:5px 0}
+
+/* ---------- section band ---------- */
+.band{display:flex;justify-content:space-between;align-items:baseline;background:var(--ink);color:var(--paper);
+  font:800 15px 'Be Vietnam Pro',sans-serif;letter-spacing:.14em;padding:7px 16px}
+.band small{font:600 12.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.04em;opacity:.85}
+
+/* ---------- infographic ---------- */
+.info{margin-top:6px;border:2px solid var(--ink);border-top:0;background:rgba(255,255,255,.28)}
+.info svg{display:block;width:100%;height:auto}
+
+/* ---------- columns ---------- */
+.cols3{display:grid;grid-template-columns:1fr 1.5px 1fr 1.5px 1fr;column-gap:22px;margin-top:20px}
+.vr{background:var(--ink)}
+.art .k{font:800 12.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.18em;color:var(--red)}
+.art h3{font:900 29px/1.1 'Playfair Display','Noto Serif',serif;margin:4px 0 10px}
+.art p{text-align:justify;font-size:16px;line-height:1.5}
+.art p.first::first-letter{float:left;font:900 66px/.82 'Playfair Display',serif;padding:5px 9px 0 0;color:var(--red)}
+.art h5{font:800 12.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.14em;margin:10px 0 4px;
+  border-bottom:1px solid var(--ink);padding-bottom:3px}
+.art ul{list-style:none}
+.art li{position:relative;padding-left:20px;margin:3px 0;text-align:left;font-size:15.5px;line-height:1.42}
+.art li::before{content:"";position:absolute;left:3px;top:.55em;width:8px;height:8px;background:var(--red);transform:rotate(45deg)}
+.eq{margin-top:9px;padding:6px 8px;border:1.5px dashed var(--ink);background:rgba(255,255,255,.4);
+  font:600 15px 'Be Vietnam Pro',sans-serif;text-align:center;letter-spacing:.01em}
+.warn{margin-top:9px;padding:6px 10px 6px 10px;background:#f6d98a;border-left:5px solid var(--red);
+  font:600 13.5px/1.4 'Be Vietnam Pro',sans-serif}
+.row{display:flex;gap:10px;align-items:flex-start;margin:7px 0}
+.chip{flex:none;min-width:70px;text-align:center;color:#fff;font:800 14px 'Be Vietnam Pro',sans-serif;padding:3px 8px;border-radius:3px;margin-top:2px}
+.chip.a{background:#d8382b}.chip.n{background:#3f9a5c}.chip.b{background:#2f6fb8}
+.row span.t{font-size:15.5px;line-height:1.42}
+
+/* ---------- feature boxes ---------- */
+.features{margin-top:20px;column-gap:20px;grid-template-columns:1fr 1fr 1fr}
+.box{border:2px solid var(--ink);background:rgba(255,255,255,.33);display:flex;flex-direction:column}
+.box h4{background:var(--ink);color:var(--paper);font:800 13.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.1em;padding:7px 12px}
+.box .in{padding:10px 14px 12px}
+.box svg{display:block;width:100%;height:auto;margin-bottom:6px}
+.box p,.box ol{font-size:15px;line-height:1.45}
+.box p{text-align:justify}
+.box ol{padding-left:20px}
+.box ol li{margin:2px 0;padding:0;text-align:left;font-size:15px}
+.box ol li::before{display:none}
+.ar{font-family:'DejaVu Sans','Liberation Sans',sans-serif;font-size:1.12em;line-height:1}
+.dia{position:absolute;left:3px;top:.55em;width:8px;height:8px;background:var(--red);transform:rotate(45deg)}
+.box .cap{font:600 12.5px 'Be Vietnam Pro',sans-serif;color:var(--muted);text-align:center;margin-top:-2px;margin-bottom:6px}
+
+/* ---------- bottom ---------- */
+.bottom{display:grid;grid-template-columns:1.9fr 1fr;gap:20px;margin-top:20px}
+.facts{border:2px solid var(--ink);background:rgba(255,255,255,.33)}
+.facts .g{display:grid;grid-template-columns:repeat(3,1fr);padding:10px 4px 12px}
+.fact{padding:0 14px;border-left:1.5px solid var(--ink)}
+.fact:first-child{border-left:0}
+.fact b{display:block;font:900 38px/1 'Playfair Display',serif;color:var(--red)}
+.fact b small{font:700 15px 'Be Vietnam Pro',sans-serif;color:var(--ink)}
+.fact p{font-size:14.5px;line-height:1.42;margin-top:5px;text-align:left}
+.fact .t{font:800 12.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.06em;display:block;margin-top:4px}
+.quiz{background:var(--ink);color:var(--paper);padding:0 0 12px;display:flex;flex-direction:column}
+.quiz h4{font:800 13.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.14em;padding:8px 14px;background:var(--red);color:#fff7e6}
+.quiz .q{padding:10px 16px 0;font-size:15.5px;line-height:1.45}
+.quiz .opts{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;padding:8px 16px 0;font:600 15px 'Be Vietnam Pro',sans-serif}
+.quiz .ans{padding:8px 16px 0;font:600 12.5px 'Be Vietnam Pro',sans-serif;opacity:.8}
+
+footer{margin-top:16px;border-top:3px double var(--ink);padding-top:7px;display:flex;justify-content:space-between;gap:20px;
+  font:600 12.5px/1.4 'Be Vietnam Pro',sans-serif;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- ============ thư viện biểu tượng dùng lại ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+  <symbol id="ic-stomach" viewBox="0 0 64 64">
+    <path d="M24 3h9v13c0 5 5 7 10 9 9 4 15 13 12 24-3 9-14 11-24 7-12-4-22-14-22-24 0-6 4-9 10-9 4 0 5-2 5-6z" fill="#ec9d8f" stroke="#7a2e24" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="40" cy="40" r="2.6" fill="#d8e84a"/><circle cx="46" cy="47" r="2" fill="#d8e84a"/><circle cx="33" cy="47" r="1.8" fill="#d8e84a"/>
+    <text x="27" y="44" font-family="Be Vietnam Pro" font-weight="800" font-size="13" fill="#5b1a12">HCl</text>
+  </symbol>
+  <symbol id="ic-lemon" viewBox="0 0 64 64">
+    <circle cx="32" cy="34" r="25" fill="#f3c623" stroke="#b78a0a" stroke-width="2.5"/>
+    <circle cx="32" cy="34" r="20" fill="#fbe97c"/>
+    <g stroke="#f3c623" stroke-width="2.4" stroke-linecap="round">
+      <path d="M36 34H51M34.8 36.8L45.4 47.4M32 38V53M29.2 36.8L18.6 47.4M28 34H13M29.2 31.2L18.6 20.6M32 30V15M34.8 31.2L45.4 20.6"/>
+    </g>
+    <circle cx="32" cy="34" r="3" fill="#f3c623"/>
+    <path d="M42 9c8-3 15 0 17 6-8 3-14 0-17-6z" fill="#5aa13a" stroke="#356a1f" stroke-width="1.5"/>
+  </symbol>
+  <symbol id="ic-coffee" viewBox="0 0 64 64">
+    <ellipse cx="30" cy="56" rx="25" ry="5" fill="#d9d2c2" stroke="#6b5f4a" stroke-width="1.5"/>
+    <path d="M50 28h4a7 7 0 0 1 0 14h-5" fill="none" stroke="#4a3a2a" stroke-width="2.6"/>
+    <path d="M10 26h40v13c0 10-8 16-20 16S10 49 10 39z" fill="#fffaf0" stroke="#4a3a2a" stroke-width="2.6" stroke-linejoin="round"/>
+    <ellipse cx="30" cy="27" rx="20" ry="4" fill="#5a3a22" stroke="#4a3a2a" stroke-width="1.5"/>
+    <path d="M21 18q-4-5 0-9M31 18q-4-5 0-9M41 18q-4-5 0-9" stroke="#8a7d68" fill="none" stroke-width="2.2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ic-rain" viewBox="0 0 64 64">
+    <g fill="#5c6b7b" stroke="#5c6b7b" stroke-width="5" stroke-linejoin="round">
+      <circle cx="20" cy="33" r="10"/><circle cx="33" cy="25" r="13"/><circle cx="46" cy="33" r="9"/><rect x="20" y="33" width="26" height="10"/>
+    </g>
+    <g fill="#b3c1d0">
+      <circle cx="20" cy="33" r="10"/><circle cx="33" cy="25" r="13"/><circle cx="46" cy="33" r="9"/><rect x="20" y="33" width="26" height="10"/>
+    </g>
+    <path d="M21 50l-3 9M33 50l-3 9M45 50l-3 9" stroke="#2f7fc4" stroke-width="3.2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ic-water" viewBox="0 0 64 64">
+    <path d="M32 5C32 5 15 27 15 40a17 17 0 0 0 34 0C49 27 32 5 32 5z" fill="#4fa3e3" stroke="#1f5f99" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M23 41a9 9 0 0 0 7 9" stroke="#fff" stroke-opacity=".8" fill="none" stroke-width="3" stroke-linecap="round"/>
+    <text x="32" y="12" display="none"></text>
+  </symbol>
+  <symbol id="ic-blood" viewBox="0 0 64 64">
+    <path d="M32 5C32 5 15 27 15 40a17 17 0 0 0 34 0C49 27 32 5 32 5z" fill="#c9302c" stroke="#7b1512" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M23 41a9 9 0 0 0 7 9" stroke="#fff" stroke-opacity=".75" fill="none" stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ic-soap" viewBox="0 0 64 64">
+    <g transform="rotate(-16 30 40)">
+      <rect x="6" y="28" width="44" height="26" rx="9" fill="#f6b7cf" stroke="#b5557c" stroke-width="2.6"/>
+      <rect x="13" y="34" width="30" height="6" rx="3" fill="#fbd7e5"/>
+    </g>
+    <circle cx="49" cy="17" r="9" fill="#e8f6ff" stroke="#6aa9d6" stroke-width="2.2"/>
+    <circle cx="35" cy="9" r="5.5" fill="#e8f6ff" stroke="#6aa9d6" stroke-width="2"/>
+    <circle cx="57" cy="34" r="5" fill="#e8f6ff" stroke="#6aa9d6" stroke-width="2"/>
+  </symbol>
+  <symbol id="ic-bleach" viewBox="0 0 64 64">
+    <rect x="25" y="3" width="14" height="9" rx="2" fill="#2c6fbb"/>
+    <path d="M21 12h22l6 9v34a4 4 0 0 1-4 4H19a4 4 0 0 1-4-4V21z" fill="#eaf4ff" stroke="#3b6ea5" stroke-width="2.6" stroke-linejoin="round"/>
+    <rect x="17.5" y="29" width="29" height="19" fill="#ffd93d" stroke="#3b6ea5" stroke-width="1.6"/>
+    <path d="M32 32l-4.5 7a5 5 0 1 0 9 0z" fill="#3b6ea5"/>
+  </symbol>
+  <symbol id="ic-limewater" viewBox="0 0 64 64">
+    <path d="M17 24h30v26a8 8 0 0 1-8 8H25a8 8 0 0 1-8-8z" fill="#d6ecf2"/>
+    <path d="M17 24h30" stroke="#6aa6b5" stroke-width="2"/>
+    <path d="M12 6h40M17 6v44a8 8 0 0 0 8 8h14a8 8 0 0 0 8-8V6" fill="none" stroke="#3d6a78" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M17 18h8M17 30h8M17 42h8" stroke="#3d6a78" stroke-width="2"/>
+    <circle cx="32" cy="46" r="2" fill="#fff"/><circle cx="39" cy="38" r="1.6" fill="#fff"/><circle cx="29" cy="35" r="1.3" fill="#fff"/>
+  </symbol>
+  <symbol id="beaker" viewBox="0 0 70 80">
+    <path d="M13 32H57V68a6 6 0 0 1-6 6H19a6 6 0 0 1-6-6z" fill="currentColor"/>
+    <path d="M13 32H57" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
+    <path d="M8 6H62M12 6V68a8 8 0 0 0 8 8H50a8 8 0 0 0 8-8V6" fill="none" stroke="#2a2a2a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 20h9M12 34h9M12 48h9" stroke="#2a2a2a" stroke-width="2"/>
+  </symbol>
+</defs>
+</svg>
+
+<div class="page">
+
+  <div class="topbar">
+    <span>SỐ 01</span>
+    <span>CHUYÊN ĐỀ HÓA HỌC · ACID – BASE – pH</span>
+    <span>NĂM HỌC 2026 – 2027</span>
+  </div>
+
+  <header class="masthead">
+    <!-- bình tam giác -->
+    <svg width="104" height="104" viewBox="0 0 64 64">
+      <path d="M23 52 L9 54 Q5 58 12 59 H52 Q59 58 55 54 L41 52z" fill="none"/>
+      <path d="M21 36 H43 L53 53 Q57 59 50 59 H14 Q7 59 11 53z" fill="#3f9a5c" opacity=".9"/>
+      <path d="M24 5 H40 M26 5 V26 L9 53 Q5 59 13 59 H51 Q59 59 55 53 L38 26 V5" fill="none" stroke="#1c1a16" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="29" cy="46" r="2.5" fill="#fff"/><circle cx="37" cy="42" r="2" fill="#fff"/><circle cx="33" cy="50" r="1.6" fill="#fff"/>
+    </svg>
+    <h1>BẢN TIN KHTN 8</h1>
+    <!-- nguyên tử -->
+    <svg width="104" height="104" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1c1a16" stroke-width="2.6">
+        <ellipse cx="32" cy="32" rx="28" ry="10"/>
+        <ellipse cx="32" cy="32" rx="28" ry="10" transform="rotate(60 32 32)"/>
+        <ellipse cx="32" cy="32" rx="28" ry="10" transform="rotate(120 32 32)"/>
+      </g>
+      <circle cx="32" cy="32" r="6" fill="#b3261e"/>
+      <circle cx="60" cy="32" r="3.6" fill="#1f5f99"/><circle cx="18" cy="8" r="3.6" fill="#1f5f99"/><circle cx="18" cy="56" r="3.6" fill="#1f5f99"/>
+    </svg>
+  </header>
+  <div class="tagline"><i></i><span>TỜ BÁO CỦA NHỮNG NHÀ KHOA HỌC NHÍ</span><i></i></div>
+
+  <section class="headline">
+    <span class="kicker">CHUYÊN ĐỀ · ACID – BASE – THANG pH</span>
+    <h2>pH – <em>“CĂN CƯỚC”</em> CỦA MỌI DUNG DỊCH QUANH TA</h2>
+    <p class="deck">Từ múi chanh chua loét đến bánh xà phòng trơn tay, mỗi dung dịch quanh ta đều mang một “con số” để nhận diện. Hãy cùng giải mã thang pH – từ 0 đến 14 – chỉ trong một trang báo.</p>
+    <div class="byline">BIÊN SOẠN: BAN KHOA HỌC LỚP 8 &nbsp;|&nbsp; THEO CHƯƠNG TRÌNH KHOA HỌC TỰ NHIÊN 8 &nbsp;|&nbsp; THỜI GIAN ĐỌC: 5 PHÚT</div>
+  </section>
+
+  <!-- ============ INFOGRAPHIC ============ -->
+  <div class="band"><span>ĐỒ HỌA · THANG pH VÀ NHỮNG DUNG DỊCH QUEN THUỘC</span><small>Giá trị pH mang tính gần đúng, đo ở 25 °C</small></div>
+  <div class="info">
+    <svg id="phscale" viewBox="0 0 1152 384" xmlns="http://www.w3.org/2000/svg" font-family="Be Vietnam Pro, sans-serif"></svg>
+  </div>
+
+  <!-- ============ 3 BÀI CHÍNH ============ -->
+  <section class="cols3">
+    <article class="art">
+      <div class="k">01 · ACID</div>
+      <h3>Acid: kẻ “chua” có mặt khắp nơi</h3>
+      <p class="first">Acid là những hợp chất trong phân tử có nguyên tử hydrogen liên kết với gốc acid. Khi tan trong nước, chúng phân li ra ion H<sup>+</sup> – “thủ phạm” gây vị chua. Ta gặp HCl trong dịch vị dạ dày, acetic acid trong giấm ăn và citric acid trong quả chanh.</p>
+      <h5>TÍNH CHẤT ĐẶC TRƯNG</h5>
+      <ul>
+        <li>Làm quỳ tím hóa <b style="color:#d8382b">đỏ</b>.</li>
+        <li>Tác dụng với kim loại hoạt động (Mg, Zn, Fe…) tạo muối và khí H<sub>2</sub>.</li>
+        <li>Tác dụng với base và oxide base tạo muối và nước.</li>
+      </ul>
+      <div class="eq">Zn + 2HCl <span class="ar">→</span> ZnCl<sub>2</sub> + H<sub>2</sub>↑</div>
+    </article>
+    <div class="vr"></div>
+    <article class="art">
+      <div class="k">02 · BASE</div>
+      <h3>Base và kiềm: nửa còn lại của thang pH</h3>
+      <p class="first">Base là những hợp chất trong phân tử có nguyên tử kim loại liên kết với nhóm hydroxide (–OH). Base tan được trong nước gọi là kiềm, tiêu biểu là NaOH (xút, dùng nấu xà phòng), KOH và Ca(OH)<sub>2</sub> (nước vôi trong).</p>
+      <h5>TÍNH CHẤT ĐẶC TRƯNG</h5>
+      <ul>
+        <li>Làm quỳ tím hóa <b style="color:#2f6fb8">xanh</b>; làm phenolphthalein không màu hóa <b style="color:#c2185b">hồng</b>.</li>
+        <li>Tác dụng với acid tạo muối và nước.</li>
+        <li>Tác dụng với oxide acid (CO<sub>2</sub>, SO<sub>2</sub>…) tạo muối và nước.</li>
+      </ul>
+      <div class="eq">Ca(OH)<sub>2</sub> + CO<sub>2</sub> <span class="ar">→</span> CaCO<sub>3</sub>↓ + H<sub>2</sub>O</div>
+      <div class="warn">⚠ Kiềm đặc có thể ăn da – luôn đeo kính và găng tay khi làm thí nghiệm.</div>
+    </article>
+    <div class="vr"></div>
+    <article class="art">
+      <div class="k">03 · THANG pH</div>
+      <h3>Đọc “con số” pH như thế nào?</h3>
+      <p class="first">Thang pH dùng để biểu thị độ acid hoặc độ base của một dung dịch, với giá trị từ 0 đến 14.</p>
+      <div class="row"><span class="chip a">pH &lt; 7</span><span class="t">Dung dịch <b>acid</b> – số càng nhỏ, acid càng mạnh.</span></div>
+      <div class="row"><span class="chip n">pH = 7</span><span class="t">Dung dịch <b>trung tính</b>, như nước tinh khiết.</span></div>
+      <div class="row"><span class="chip b">pH &gt; 7</span><span class="t">Dung dịch <b>base</b> – số càng lớn, base càng mạnh.</span></div>
+      <h5>ĐO pH BẰNG CÁCH NÀO?</h5>
+      <p>Nhúng giấy quỳ tím hoặc giấy pH vào dung dịch rồi so màu với bảng chuẩn. Quỳ tím chỉ cho biết dung dịch là acid hay base; giấy pH và máy đo pH cho giá trị cụ thể hơn.</p>
+    </article>
+  </section>
+
+  <!-- ============ 3 HỘP CHUYÊN ĐỀ ============ -->
+  <section class="cols3 features">
+    <!-- Bắp cải tím -->
+    <div class="box">
+      <h4>THÍ NGHIỆM · NƯỚC BẮP CẢI TÍM</h4>
+      <div class="in">
+        <svg viewBox="0 0 330 154" xmlns="http://www.w3.org/2000/svg" font-family="Be Vietnam Pro, sans-serif">
+          <rect x="4" y="4" width="322" height="146" rx="10" fill="#efe4c4" stroke="#1c1a16" stroke-width="1.5" stroke-dasharray="5 4"/>
+          <g transform="translate(47 14)">
+            <path d="M0 22H36V60A18 18 0 0 1 0 60Z" fill="#e0457b"/>
+            <path d="M0 0V60A18 18 0 0 0 36 60V0" fill="none" stroke="#1c1a16" stroke-width="3" stroke-linecap="round"/>
+            <path d="M-4 0H40" stroke="#1c1a16" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="12" cy="66" r="2.5" fill="#fff" opacity=".6"/>
+          </g>
+          <g transform="translate(147 14)">
+            <path d="M0 22H36V60A18 18 0 0 1 0 60Z" fill="#7a4fb0"/>
+            <path d="M0 0V60A18 18 0 0 0 36 60V0" fill="none" stroke="#1c1a16" stroke-width="3" stroke-linecap="round"/>
+            <path d="M-4 0H40" stroke="#1c1a16" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="12" cy="66" r="2.5" fill="#fff" opacity=".6"/>
+          </g>
+          <g transform="translate(247 14)">
+            <path d="M0 22H36V60A18 18 0 0 1 0 60Z" fill="#2aa7a0"/>
+            <path d="M0 0V60A18 18 0 0 0 36 60V0" fill="none" stroke="#1c1a16" stroke-width="3" stroke-linecap="round"/>
+            <path d="M-4 0H40" stroke="#1c1a16" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="12" cy="66" r="2.5" fill="#fff" opacity=".6"/>
+          </g>
+          <text x="65" y="114" font-size="12.5" font-weight="800" text-anchor="middle" fill="#1c1a16">Nước chanh</text>
+          <text x="65" y="128" font-size="11.5" font-weight="600" text-anchor="middle" fill="#5b5547">(acid)</text>
+          <text x="65" y="143" font-size="12.5" font-weight="800" text-anchor="middle" fill="#c2185b"><tspan font-family="DejaVu Sans, sans-serif" font-size="1.15em">→</tspan> hồng / đỏ</text>
+          <text x="165" y="114" font-size="12.5" font-weight="800" text-anchor="middle" fill="#1c1a16">Nước lọc</text>
+          <text x="165" y="128" font-size="11.5" font-weight="600" text-anchor="middle" fill="#5b5547">(trung tính)</text>
+          <text x="165" y="143" font-size="12.5" font-weight="800" text-anchor="middle" fill="#6b3fa0"><tspan font-family="DejaVu Sans, sans-serif" font-size="1.15em">→</tspan> tím</text>
+          <text x="265" y="114" font-size="12.5" font-weight="800" text-anchor="middle" fill="#1c1a16">Nước xà phòng</text>
+          <text x="265" y="128" font-size="11.5" font-weight="600" text-anchor="middle" fill="#5b5547">(base)</text>
+          <text x="265" y="143" font-size="12.5" font-weight="800" text-anchor="middle" fill="#16807a"><tspan font-family="DejaVu Sans, sans-serif" font-size="1.15em">→</tspan> xanh lam – lục</text>
+        </svg>
+        <ol>
+          <li>Thái nhỏ bắp cải tím, ngâm nước nóng rồi lọc lấy nước màu tím.</li>
+          <li>Chia vào 3 cốc trong suốt.</li>
+          <li>Nhỏ lần lượt nước chanh, nước lọc, nước xà phòng loãng.</li>
+          <li>Quan sát và ghi lại màu của từng cốc.</li>
+        </ol>
+        <div class="warn" style="margin-top:7px">⚠ Không nếm thử hóa chất; làm cùng người lớn.</div>
+      </div>
+    </div>
+
+    <!-- Trung hòa -->
+    <div class="box">
+      <h4>PHẢN ỨNG TRUNG HÒA · ACID GẶP BASE</h4>
+      <div class="in">
+        <svg viewBox="0 0 330 150" xmlns="http://www.w3.org/2000/svg" font-family="Be Vietnam Pro, sans-serif">
+          <use href="#beaker" x="10" y="18" width="70" height="80" style="color:#ef8a82"/>
+          <text x="45" y="116" font-size="13" font-weight="800" text-anchor="middle">HCl</text>
+          <text x="45" y="131" font-size="11.5" font-weight="600" text-anchor="middle" fill="#5b5547">acid · quỳ đỏ</text>
+
+          <text x="96" y="66" font-size="30" font-weight="800" text-anchor="middle">+</text>
+
+          <use href="#beaker" x="112" y="18" width="70" height="80" style="color:#6aa0e0"/>
+          <text x="147" y="116" font-size="13" font-weight="800" text-anchor="middle">NaOH</text>
+          <text x="147" y="131" font-size="11.5" font-weight="600" text-anchor="middle" fill="#5b5547">base · quỳ xanh</text>
+
+          <path d="M194 62h30" stroke="#1c1a16" stroke-width="4" stroke-linecap="round"/>
+          <path d="M218 52l12 10-12 10z" fill="#1c1a16"/>
+
+          <use href="#beaker" x="240" y="18" width="70" height="80" style="color:#a98bd0"/>
+          <g fill="#fff" stroke="#999" stroke-width="1">
+            <rect x="258" y="82" width="6" height="6"/><rect x="268" y="85" width="6" height="6"/><rect x="278" y="81" width="6" height="6"/><rect x="263" y="90" width="5" height="5"/>
+          </g>
+          <text x="275" y="116" font-size="13" font-weight="800" text-anchor="middle">NaCl + H<tspan baseline-shift="sub" font-size="9">2</tspan>O</text>
+          <text x="275" y="131" font-size="11.5" font-weight="600" text-anchor="middle" fill="#5b5547">trung tính · quỳ tím</text>
+        </svg>
+        <p><b>Acid + Base <span class="ar">→</span> Muối + Nước.</b> Phản ứng làm giảm tính acid và tính base của dung dịch, đưa pH về gần 7.</p>
+        <div class="eq">HCl + NaOH <span class="ar">→</span> NaCl + H<sub>2</sub>O</div>
+        <h5 style="font:800 12.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.14em;margin:9px 0 3px;border-bottom:1px solid #1c1a16;padding-bottom:3px">ỨNG DỤNG</h5>
+        <ul style="list-style:none">
+          <li style="position:relative;padding-left:20px;margin:2px 0;font-size:14.5px;line-height:1.4"><span class="dia"></span>Thuốc chữa ợ chua chứa Mg(OH)<sub>2</sub>, Al(OH)<sub>3</sub> trung hòa acid dư ở dạ dày.</li>
+          <li style="position:relative;padding-left:20px;margin:2px 0;font-size:14.5px;line-height:1.4"><span class="dia"></span>Bón vôi để khử chua cho đất; xử lý nước thải có tính acid.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Mưa acid -->
+    <div class="box">
+      <h4>MƯA ACID · MỐI ĐE DỌA TỪ BẦU TRỜI</h4>
+      <div class="in">
+        <svg viewBox="0 0 330 150" xmlns="http://www.w3.org/2000/svg" font-family="Be Vietnam Pro, sans-serif">
+          <rect x="2" y="2" width="326" height="146" rx="8" fill="#d9e2dc" stroke="#1c1a16" stroke-width="1.5"/>
+          <!-- nhà máy -->
+          <rect x="18" y="62" width="9" height="46" fill="#5a5a55"/><rect x="38" y="52" width="9" height="56" fill="#5a5a55"/>
+          <path d="M10 112V86l22 12V86l22 12V86l22 12V112z" fill="#7a7a73" stroke="#3a3a36" stroke-width="2" stroke-linejoin="round"/>
+          <rect x="22" y="104" width="8" height="8" fill="#f6d98a"/><rect x="40" y="104" width="8" height="8" fill="#f6d98a"/>
+          <g fill="#8d8d88" opacity=".85">
+            <circle cx="24" cy="50" r="6"/><circle cx="40" cy="38" r="8"/><circle cx="58" cy="30" r="9"/><circle cx="48" cy="44" r="6"/>
+          </g>
+          <!-- mây -->
+          <g fill="#6f7a86" stroke="#6f7a86" stroke-width="4" stroke-linejoin="round">
+            <circle cx="130" cy="30" r="14"/><circle cx="152" cy="20" r="18"/><circle cx="178" cy="28" r="15"/><circle cx="196" cy="32" r="10"/><rect x="130" y="30" width="66" height="12"/>
+          </g>
+          <g fill="#8794a1">
+            <circle cx="130" cy="30" r="14"/><circle cx="152" cy="20" r="18"/><circle cx="178" cy="28" r="15"/><circle cx="196" cy="32" r="10"/><rect x="130" y="30" width="66" height="12"/>
+          </g>
+          <path d="M72 44 Q96 34 118 34" stroke="#8d8d88" stroke-width="2" fill="none" stroke-dasharray="3 4"/>
+          <text x="64" y="15" font-size="11.5" font-weight="800" fill="#7a2e24">SO<tspan baseline-shift="sub" font-size="8">2</tspan>, NO<tspan baseline-shift="sub" font-size="8">x</tspan></text>
+          <!-- mưa -->
+          <g stroke="#3b8f6f" stroke-width="2.4" stroke-linecap="round">
+            <path d="M138 50l-5 14M154 50l-5 14M170 50l-5 14M186 50l-5 14M146 70l-5 14M162 70l-5 14M178 70l-5 14M154 90l-5 14M170 90l-5 14"/>
+          </g>
+          <!-- cây trụi lá -->
+          <rect x="232" y="84" width="7" height="30" fill="#7a5a3a"/>
+          <path d="M235 88l-14-14M235 96l16-14M235 84l0-18M221 74l-6-5M251 82l7-4M235 66l-5-8M235 66l6-7" stroke="#7a5a3a" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M262 100l6-8" stroke="#a08c5a" stroke-width="2" stroke-linecap="round"/>
+          <!-- tượng/ công trình ăn mòn -->
+          <rect x="276" y="86" width="30" height="26" fill="#bdb6a6" stroke="#6b6558" stroke-width="2"/>
+          <rect x="272" y="80" width="38" height="8" fill="#a39c8c" stroke="#6b6558" stroke-width="2"/>
+          <path d="M284 112v-8M296 112v-10" stroke="#8c8574" stroke-width="2"/>
+          <!-- đất -->
+          <rect x="2" y="112" width="326" height="36" fill="#a89a74"/><path d="M2 112H328" stroke="#1c1a16" stroke-width="2"/>
+          <text x="165" y="136" font-size="13" font-weight="800" text-anchor="middle" fill="#1c1a16">Nước mưa có pH &lt; 5,6 <tspan font-family="DejaVu Sans, sans-serif" font-size="1.15em">→</tspan> mưa acid</text>
+        </svg>
+        <p>Đốt than, dầu và khí thải xe cộ, nhà máy thải ra <b>SO<sub>2</sub></b> và <b>NO<sub>x</sub></b>. Các khí này hòa vào hơi nước tạo ra acid, rơi xuống thành mưa có pH nhỏ hơn 5,6. Nước mưa bình thường đã hơi acid (pH ≈ 5,6) vì hòa tan khí CO<sub>2</sub> trong không khí.</p>
+        <h5 style="font:800 12.5px 'Be Vietnam Pro',sans-serif;letter-spacing:.14em;margin:9px 0 3px;border-bottom:1px solid #1c1a16;padding-bottom:3px">HẬU QUẢ &amp; GIẢI PHÁP</h5>
+        <p style="text-align:left;font-size:14.5px;line-height:1.42">Ăn mòn công trình, làm chua đất, hại cây và sinh vật dưới nước. Giảm đốt nhiên liệu hóa thạch, lọc khí thải và dùng năng lượng sạch.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DƯỚI CÙNG ============ -->
+  <section class="bottom">
+    <div class="facts">
+      <div class="band" style="font-size:13.5px"><span>BẠN CÓ BIẾT?</span></div>
+      <div class="g">
+        <div class="fact">
+          <b>1,5–3,5</b><span class="t">DẠ DÀY – MỘT “HỒ ACID”</span>
+          <p>Dịch vị chứa HCl nên rất chua, đủ để tiêu diệt nhiều vi khuẩn theo thức ăn. Lớp chất nhầy giúp bảo vệ thành dạ dày.</p>
+        </div>
+        <div class="fact">
+          <b>7,35–7,45</b><span class="t">pH MÁU RẤT “KHÓ TÍNH”</span>
+          <p>Cơ thể giữ pH của máu trong khoảng hẹp này. Chỉ lệch đi chút ít cũng có thể gây nguy hiểm cho sức khỏe.</p>
+        </div>
+        <div class="fact">
+          <b>1909</b><span class="t">AI ĐẶT RA CHỮ “pH”?</span>
+          <p>Khái niệm pH do nhà hóa học Đan Mạch Søren Sørensen đề xuất vào năm 1909 để đo độ acid một cách thuận tiện.</p>
+        </div>
+      </div>
+    </div>
+    <div class="quiz">
+      <h4>THỬ SỨC NHANH</h4>
+      <div class="q">Dung dịch X làm quỳ tím chuyển sang màu <b>xanh</b>. Giá trị pH nào phù hợp với X?</div>
+      <div class="opts"><span>A. pH = 2</span><span>B. pH = 5</span><span>C. pH = 7</span><span>D. pH = 11</span></div>
+      <div class="ans">Đáp án: D – vì X là dung dịch base (pH &gt; 7).</div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Nội dung tổng hợp theo chương trình Khoa học tự nhiên 8. Khi làm thí nghiệm, hãy đeo kính, găng tay và có người lớn hướng dẫn.</span>
+    <span style="white-space:nowrap">© Bản tin KHTN 8 · Số 01</span>
+  </footer>
+</div>
+
+<script>
+/* Vẽ thang pH: dữ liệu → SVG, dễ chỉnh sửa */
+(function(){
+  const NS='http://www.w3.org/2000/svg', svg=document.getElementById('phscale');
+  const X0=60, U=73.714, BAR_Y=142, BAR_H=50;
+  const x=ph=>X0+ph*U;
+  const el=(n,a={},t)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;return e;};
+  const stops=['#e8312f','#ee4a2c','#f26a22','#f7931e','#fbb12a','#f9d23c','#cfd93f','#6fc46c','#3eb489','#2ba7a7','#2f8bc9','#3b6fc4','#4a56b5','#5a3f9e','#47287f'];
+
+  const defs=el('defs'); const g=el('linearGradient',{id:'phgrad',gradientUnits:'userSpaceOnUse',x1:X0,x2:X0+14*U,y1:0,y2:0});
+  stops.forEach((c,i)=>g.appendChild(el('stop',{offset:(i/14*100).toFixed(2)+'%','stop-color':c})));
+  defs.appendChild(g); svg.appendChild(defs);
+
+  const items=[
+    {ph:2.0, top:true,  ic:'ic-stomach',   name:'Dịch vị dạ dày',  val:'pH 1,5 – 3,5'},
+    {ph:5.0, top:true,  ic:'ic-coffee',    name:'Cà phê',          val:'pH ≈ 5'},
+    {ph:7.0, top:true,  ic:'ic-water',     name:'Nước tinh khiết', val:'pH = 7'},
+    {ph:9.5, top:true,  ic:'ic-soap',      name:'Xà phòng',        val:'pH ≈ 9 – 10'},
+    {ph:12.0,top:true,  ic:'ic-bleach',    name:'Nước tẩy Javel',  val:'pH ≈ 11 – 13'},
+    {ph:2.4, top:false, ic:'ic-lemon',     name:'Nước chanh',      val:'pH ≈ 2 – 2,6'},
+    {ph:5.6, top:false, ic:'ic-rain',      name:'Nước mưa',        val:'pH ≈ 5,6'},
+    {ph:7.4, top:false, ic:'ic-blood',     name:'Máu người',       val:'pH 7,35 – 7,45'},
+    {ph:12.4,top:false, ic:'ic-limewater', name:'Nước vôi trong',  val:'pH ≈ 12,4'}
+  ];
+
+  // nhãn vùng (dưới thanh)
+  const zone=(x1,x2,color,label,sub)=>{
+    svg.appendChild(el('path',{d:`M${x1} 340v8H${x2}v-8`,fill:'none',stroke:color,'stroke-width':3,'stroke-linejoin':'round'}));
+    const t=el('text',{x:(x1+x2)/2,y:368,'text-anchor':'middle','font-size':15.5,'font-weight':800,fill:color},label);
+    svg.appendChild(t);
+    if(sub){svg.appendChild(el('text',{x:(x1+x2)/2,y:384-1,'text-anchor':'middle','font-size':0,fill:color},sub));}
+  };
+
+  // thanh màu
+  svg.appendChild(el('rect',{x:30,y:BAR_Y,width:1092,height:BAR_H,rx:25,fill:'url(#phgrad)',stroke:'#1c1a16','stroke-width':2.5}));
+  for(let i=0;i<=14;i++){
+    svg.appendChild(el('text',{x:x(i),y:BAR_Y+BAR_H/2+8,'text-anchor':'middle','font-size':22,'font-weight':800,fill:'#fff',
+      style:'paint-order:stroke;stroke:rgba(0,0,0,.55);stroke-width:3.5px;stroke-linejoin:round'},i));
+  }
+
+  items.forEach(it=>{
+    const cx=x(it.ph), ICON=60;
+    const grp=el('g');
+    if(it.top){
+      grp.appendChild(el('text',{x:cx,y:20,'text-anchor':'middle','font-size':15.5,'font-weight':800,fill:'#1c1a16'},it.name));
+      grp.appendChild(el('text',{x:cx,y:38,'text-anchor':'middle','font-size':13,'font-weight':600,fill:'#b3261e'},it.val));
+      grp.appendChild(el('use',{href:'#'+it.ic,x:cx-ICON/2,y:46,width:ICON,height:ICON}));
+      grp.appendChild(el('path',{d:`M${cx} 108V${BAR_Y}`,stroke:'#1c1a16','stroke-width':2,'stroke-dasharray':'3 3'}));
+      grp.appendChild(el('path',{d:`M${cx-6} ${BAR_Y-1}h12l-6 9z`,fill:'#1c1a16',transform:`translate(0 ${-9})`}));
+    }else{
+      grp.appendChild(el('path',{d:`M${cx} ${BAR_Y+BAR_H}V224`,stroke:'#1c1a16','stroke-width':2,'stroke-dasharray':'3 3'}));
+      grp.appendChild(el('path',{d:`M${cx-6} ${BAR_Y+BAR_H+10}h12l-6 -9z`,fill:'#1c1a16'}));
+      grp.appendChild(el('use',{href:'#'+it.ic,x:cx-ICON/2,y:222,width:ICON,height:ICON}));
+      grp.appendChild(el('text',{x:cx,y:301,'text-anchor':'middle','font-size':15.5,'font-weight':800,fill:'#1c1a16'},it.name));
+      grp.appendChild(el('text',{x:cx,y:319,'text-anchor':'middle','font-size':13,'font-weight':600,fill:'#b3261e'},it.val));
+    }
+    svg.appendChild(grp);
+  });
+
+  zone(34, x(7)-20, '#d8382b', '◄ ACID · quỳ tím hóa ĐỎ');
+  zone(x(7)+20, 1118, '#2f6fb8', 'BASE (KIỀM) · quỳ tím hóa XANH ►');
+  // tâm 7
+  svg.appendChild(el('text',{x:x(7),y:368,'text-anchor':'middle','font-size':14.5,'font-weight':800,fill:'#3f9a5c'},'TRUNG TÍNH'));
+  svg.appendChild(el('path',{d:`M${x(7)} 340v8`,stroke:'#3f9a5c','stroke-width':3}));
+  // nhãn mạnh/yếu
+  const small=(xx,t,anc)=>svg.appendChild(el('text',{x:xx,y:334,'text-anchor':anc,'font-size':12.5,'font-weight':600,fill:'#5b5547'},t));
+  small(34,'acid càng mạnh','start'); small(1118,'base càng mạnh','end');
+})();
+</script>
+</body>
+</html>
