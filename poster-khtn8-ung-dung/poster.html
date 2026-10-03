@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Ứng dụng Khoa học tự nhiên trong đời sống – Kết nối tương lai</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{ --navy:#1d3e8f; --ink:#2b3350; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#dff0fa}
+body{width:1240px;font-family:'Nunito','Be Vietnam Pro',sans-serif;color:var(--ink);font-weight:700}
+
+.page{position:relative;overflow:hidden;padding:0 36px 40px;
+  background:linear-gradient(180deg,#bfe3fb 0%,#d8effb 18%,#eaf7ee 52%,#e6f6dc 100%)}
+.bg-top{position:absolute;left:0;top:0;width:1240px;height:360px;pointer-events:none}
+.bg-bottom{position:absolute;left:0;bottom:0;width:1240px;height:300px;pointer-events:none}
+.page > *:not(.bg-top):not(.bg-bottom){position:relative;z-index:2}
+
+/* ---------- đầu trang ---------- */
+header{position:relative;height:292px;text-align:center}
+.note{position:absolute;background:#fff8cc;border-radius:6px;padding:16px 16px 14px;font:700 17px/1.4 'Mali',cursive;color:#3b4a7a;
+  box-shadow:0 6px 14px rgba(60,80,120,.22);transform:rotate(-4deg)}
+.note::before{content:"";position:absolute;left:50%;top:-10px;width:44px;height:16px;margin-left:-22px;background:rgba(255,190,200,.85);transform:rotate(-3deg);border-radius:2px}
+.note i{font-style:normal;color:#e8579a}
+.note.tl{left:2px;top:26px;width:178px;font-size:15.5px;white-space:nowrap;text-align:center}
+.plane{position:absolute;left:120px;top:2px;width:58px}
+.school{position:absolute;right:-8px;top:38px;width:178px}
+.sun{position:absolute;right:6px;top:-6px;width:62px}
+.cloudnote{position:absolute;right:2px;top:196px;width:196px;padding:12px 16px;background:#fff;border:3px solid #7fb8ec;border-radius:42px 48px 44px 40px;
+  font:700 15.5px/1.35 'Mali',cursive;color:#2c63b8;transform:rotate(3deg);text-align:center;box-shadow:0 5px 12px rgba(60,100,160,.18)}
+.title{position:absolute;left:176px;right:176px;top:28px}
+.title h1{font:800 53px/1.05 'Baloo 2';color:var(--navy);letter-spacing:.2px;
+  -webkit-text-stroke:11px #fff;paint-order:stroke fill;text-shadow:0 5px 0 #9dbcea;white-space:nowrap}
+.banner{position:relative;display:inline-block;margin-top:4px;width:800px;height:78px}
+.banner svg{position:absolute;inset:0;width:100%;height:100%}
+.banner span{position:relative;display:block;line-height:74px;font:800 35px/74px 'Baloo 2';color:#d62839;letter-spacing:.3px;
+  -webkit-text-stroke:5px #fff;paint-order:stroke fill;white-space:nowrap}
+.quote{display:inline-block;margin-top:14px;max-width:800px;background:rgba(255,255,255,.92);border-radius:999px;padding:8px 40px 6px;
+  font:700 17px/1.3 'Mali',cursive;color:#2a4a8f;box-shadow:0 4px 10px rgba(60,100,160,.15)}
+.quote b{font-weight:700;color:#d62839}
+
+/* ---------- lưới nội dung ---------- */
+.row{display:grid;gap:22px;margin-top:22px}
+.row.two{grid-template-columns:1fr 1fr}
+.row.mid{grid-template-columns:1fr 168px 1fr;margin-top:26px}
+.heartwrap{position:relative;z-index:5;display:flex;align-items:center;justify-content:center}
+.heartwrap svg{position:absolute;width:262px;left:50%;top:50%;transform:translate(-50%,-50%);filter:drop-shadow(0 6px 8px rgba(200,80,120,.22))}
+
+.card{position:relative;background:var(--bg);border:3px solid var(--c);border-radius:30px;padding:14px 18px 14px;
+  box-shadow:0 5px 0 rgba(0,0,0,.05),0 12px 24px rgba(60,90,130,.14);display:flex;flex-direction:column}
+.num{position:absolute;left:-14px;top:-16px;width:62px;height:62px;border-radius:50%;background:var(--c);border:4px solid #fff;color:#fff;
+  font:800 38px/1 'Baloo 2';display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 rgba(0,0,0,.12);padding-top:3px}
+.card h3{margin-left:54px;font:800 29px/1.05 'Baloo 2';color:var(--c);padding-top:4px}
+.rib{display:block;width:max-content;margin:3px 0 6px auto;padding:1px 26px;background:linear-gradient(90deg,transparent,var(--rib) 16%,var(--rib) 84%,transparent);
+  font:800 17px/1.4 'Baloo 2';color:var(--c)}
+.bd{display:grid;grid-template-columns:var(--ill,206px) 1fr;gap:6px 8px;align-items:center;flex:1}
+.ill svg{display:block;width:100%;height:auto}
+ul{list-style:none}
+.bd li,.act li{position:relative;padding-left:21px;margin:3px 0;line-height:1.3;font-size:14.5px}
+.bd li::before,.act li::before{content:"";position:absolute;left:0;top:.1em;width:15px;height:15px;background:var(--c);
+  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z'/></svg>") center/contain no-repeat;
+          mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z'/></svg>") center/contain no-repeat}
+.low{display:grid;grid-template-columns:1.45fr 1fr;gap:10px;margin-top:8px;align-items:center}
+.act{background:rgba(255,255,255,.9);border:2.5px dashed var(--c);border-radius:18px;padding:6px 12px 7px}
+.act h4{display:flex;align-items:center;gap:6px;font:800 16px/1.1 'Baloo 2';color:var(--c);margin-bottom:2px}
+.act li{font-size:13.5px;margin:2px 0}
+.act li::before{width:12px;height:12px;top:.18em}
+.bub{background:#fff;border:2.5px solid var(--c);border-radius:44% 52% 46% 54% / 56% 48% 54% 46%;padding:12px 14px;text-align:center;
+  font:700 14.5px/1.32 'Mali',cursive;color:var(--c);transform:rotate(-2deg)}
+
+/* ---------- dải cam kết ---------- */
+.bottom{display:grid;grid-template-columns:330px 1fr;gap:6px;align-items:end;margin-top:18px;min-height:232px}
+.pledge{padding-bottom:6px}
+.pledge h2{text-align:center;font:800 32px/1 'Baloo 2';color:#f08a00;-webkit-text-stroke:7px #fff;paint-order:stroke fill;text-shadow:0 3px 0 #ffd38a;margin-bottom:10px}
+.pl6{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.pl{background:#fff;border:2.5px solid var(--c);border-radius:16px;padding:8px 4px 8px;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.06)}
+.pl svg{width:44px;height:44px;display:block;margin:0 auto 2px}
+.pl b{display:block;font:800 15.5px/1.1 'Baloo 2';color:var(--c)}
+.pl small{display:block;font:700 11.5px/1.2 'Nunito';color:#5b6482;margin-top:2px}
+.ribbon{margin:12px auto 0;width:max-content;max-width:100%;padding:7px 30px 5px;background:rgba(255,255,255,.94);border:3px solid #cfd8f0;border-radius:999px;transform:translateX(-26px);
+  font:700 17px/1.3 'Mali',cursive;color:#2a4a8f;text-align:center}
+.page > div.endnote.note{position:absolute;right:26px;bottom:14px;width:176px;transform:rotate(3deg);font-size:14px;white-space:nowrap;text-align:center;padding:14px 10px 12px;z-index:4}
+.credit{position:relative;z-index:3;text-align:center;margin-top:10px;font:700 9px/1 'Nunito';color:#3f6a35;letter-spacing:.2px}
+</style>
+</head>
+<body>
+<div class="page" id="page">
+  <div class="bg-top" id="bgTop"></div>
+
+  <header>
+    <div class="note tl"><i>Học</i> để hiểu<br><i>Hiểu</i> để làm<br><i>Làm</i> để thay đổi<br>cuộc sống!</div>
+    <svg class="plane" viewBox="0 0 80 50"><path d="M4 22L76 4L50 46L38 30Z" fill="#fff" stroke="#4a3426" stroke-width="2.4" stroke-linejoin="round"/><path d="M38 30L76 4L30 34L32 44Z" fill="#dfe9f7" stroke="#4a3426" stroke-width="2.4" stroke-linejoin="round"/><path d="M4 22L38 30" stroke="#4a3426" stroke-width="2.2"/></svg>
+    <div class="sun" id="sunEl"></div>
+    <div class="school" id="schoolEl"></div>
+    <div class="title">
+      <h1>ỨNG DỤNG KHOA HỌC TỰ NHIÊN</h1>
+      <div class="banner">
+        <svg viewBox="0 0 800 78" preserveAspectRatio="none"><path d="M8 8H792L772 39L792 70H8L28 39Z" fill="#ffd23f" stroke="#4a3426" stroke-width="3.4" stroke-linejoin="round"/><path d="M22 15H778L764 39L778 63H22L36 39Z" fill="#ffc21a" opacity=".7"/><path d="M22 13H778" stroke="#fff" stroke-opacity=".8" stroke-width="4" stroke-linecap="round"/></svg>
+        <span>TRONG ĐỜI SỐNG – KẾT NỐI TƯƠNG LAI</span>
+      </div>
+      <div><div class="quote">“Mỗi ngày là một <b>thí nghiệm</b> – mỗi câu hỏi là một <b>cánh cửa</b> mở ra tương lai!”</div></div>
+    </div>
+    <div class="cloudnote">Khoa học không ở đâu xa,<br>khoa học ở ngay quanh ta!</div>
+  </header>
+
+  <main id="main"></main>
+
+  <section class="bottom">
+    <div id="kidsEl"></div>
+    <div class="pledge">
+      <h2>✿ CHÚNG MÌNH CÙNG HÀNH ĐỘNG! ✿</h2>
+      <div class="pl6" id="pl6"></div>
+      <div class="ribbon">“Khoa học bắt đầu từ những điều quen thuộc nhất!”</div>
+    </div>
+  </section>
+  <div class="note endnote" id="endNote"><i>Ứng dụng KHTN</i><br>trong đời sống –<br>kết nối tương lai!</div>
+  <div class="bg-bottom" id="bgBottom"></div>
+  <div class="credit">Poster được thiết kế bởi Claude (Anthropic) · Nội dung tổng hợp theo chương trình KHTN 8 · Thí nghiệm cần có người lớn hướng dẫn</div>
+</div>
+
+<script src="art.js"></script>
+<script src="scenes.js"></script>
+<script>
+const cards = [
+  { n:1, c:'#e8579a', bg:'#fdeaf3', rib:'rgba(232,87,154,.16)', title:'Sức khỏe & dinh dưỡng', sub:'Hiểu cơ thể để sống khỏe', scene:scene1,
+    items:['Ăn đủ nhóm chất: tinh bột, đạm, chất béo, vitamin, khoáng.','Uống đủ nước, ngủ đủ giấc để não bộ và cơ thể làm việc tốt.','Rửa tay bằng xà phòng để loại bỏ vi khuẩn gây bệnh.','Vận động thường xuyên giúp tim, phổi và xương chắc khỏe.','Tiêm vắc-xin đúng lịch giúp cơ thể sẵn sàng chống bệnh.'],
+    acts:['Thêm rau xanh, trái cây vào bữa ăn.','Uống nước lọc thay nước ngọt.','Vận động thể thao mỗi ngày.'],
+    bubble:'Cơ thể khỏe mạnh là nền tảng cho mọi ước mơ!' },
+  { n:2, c:'#f08a00', bg:'#fff3d9', rib:'rgba(240,138,0,.17)', title:'Năng lượng & điện an toàn', sub:'Dùng điện thông minh, an toàn', scene:scene2,
+    items:['Năng lượng không mất đi mà chuyển hóa sang dạng khác.','Dùng bóng đèn LED, tắt thiết bị khi không sử dụng.','Không chạm ổ điện, dây điện hở; tay ướt không cắm điện.','Điện mặt trời, điện gió là nguồn năng lượng sạch, tái tạo.','Có người bị điện giật: ngắt điện trước, rồi gọi người lớn.'],
+    acts:['Tắt đèn, quạt khi rời khỏi phòng.','Rút sạc khi pin đã đầy.','Nhắc người thân kiểm tra dây điện.'],
+    bubble:'Tiết kiệm điện hôm nay, giữ hành tinh xanh cho ngày mai!' },
+  { n:3, c:'#8b5cc7', bg:'#f0e9fb', rib:'rgba(139,92,199,.15)', title:'Hóa học quanh ta', sub:'Hiểu phản ứng, dùng đúng cách', scene:scene3, mid:true,
+    items:['Giấm, chanh là acid nhẹ: tẩy cặn vôi, khử mùi tanh.','Baking soda có tính kiềm nhẹ, trung hòa vị chua, làm bánh nở.','Không trộn thuốc tẩy với chất tẩy rửa khác vì sinh khí độc.','Đọc nhãn, cất hóa chất xa tầm tay trẻ nhỏ.','Dùng giấy quỳ hoặc nước bắp cải tím để nhận biết acid – base.'],
+    acts:['Thử nước bắp cải tím với chanh.','Đọc nhãn trước khi sử dụng.','Cất hóa chất đúng nơi quy định.'],
+    bubble:'Hóa học không đáng sợ nếu ta hiểu và dùng đúng cách!' },
+  { n:4, c:'#35a24f', bg:'#e6f5e4', rib:'rgba(53,162,79,.16)', title:'Môi trường xanh', sub:'Hành động nhỏ, Trái Đất xanh', scene:scene4, mid:true,
+    items:['Phân loại rác: hữu cơ, tái chế và rác còn lại.','Dùng túi vải, bình nước cá nhân để giảm rác nhựa.','Khóa vòi nước khi không dùng để tiết kiệm nước.','Đi bộ, đạp xe, đi xe buýt để giảm khí thải CO₂.','Cây xanh hấp thụ CO₂ và làm không khí trong lành hơn.'],
+    acts:['Mang theo bình nước, túi vải.','Phân loại rác ngay tại nhà.','Trồng và chăm sóc một chậu cây.'],
+    bubble:'Một hành động nhỏ, một Trái Đất xanh hơn!' },
+  { n:5, c:'#2f7fd6', bg:'#e3f0fd', rib:'rgba(47,127,214,.15)', title:'Công nghệ & kỹ thuật', sub:'Khoa học đứng sau mọi thiết bị', scene:scene5,
+    items:['Đòn bẩy giúp nâng vật nặng bằng lực nhỏ: kéo, xe cút kít.','Cùng một lực, diện tích càng nhỏ thì áp suất càng lớn.','Lực đẩy Archimedes giúp tàu thuyền nổi trên mặt nước.','Bình giữ nhiệt hạn chế truyền nhiệt, giữ nước nóng lâu.','Điện thoại, robot, AI đều bắt nguồn từ kiến thức khoa học.'],
+    acts:['Quan sát đồ vật và hỏi: “Vì sao?”','Tự làm mô hình thuyền, cầu giấy.','Thử nghiệm vật nổi – vật chìm.'],
+    bubble:'Hiểu nguyên lý, bạn sẽ sáng tạo được nhiều điều mới!' },
+  { n:6, c:'#e5424a', bg:'#fde8e8', rib:'rgba(229,66,74,.15)', title:'Kết nối tương lai', sub:'Từ lớp học đến nghề nghiệp', scene:scene6,
+    items:['Khoa học mở ra nhiều nghề: bác sĩ, kỹ sư, nhà nông học...','Rèn tư duy: quan sát, đặt câu hỏi, thí nghiệm, kết luận.','Làm dự án STEM theo nhóm để rèn kỹ năng hợp tác.','Dùng công nghệ và AI một cách an toàn, có trách nhiệm.','Học suốt đời để thích ứng với thế giới luôn thay đổi.'],
+    acts:['Đọc sách, xem video khoa học.','Tham gia câu lạc bộ khoa học.','Ghi lại một câu hỏi “vì sao” mỗi ngày.'],
+    bubble:'Tương lai thuộc về những ai tò mò và dám thử nghiệm!' }
+];
+
+const cardHTML = k => `
+<article class="card" style="--c:${k.c};--bg:${k.bg};--rib:${k.rib};${k.mid ? '--ill:176px' : ''}">
+  <div class="num">${k.n}</div>
+  <h3>${k.title}</h3>
+  <span class="rib">${k.sub}</span>
+  <div class="bd">
+    <div class="ill">${k.scene()}</div>
+    <ul>${k.items.map(t => `<li>${t}</li>`).join('')}</ul>
+  </div>
+  <div class="low">
+    <div class="act"><h4>${megaphone(k.c)} Hành động nhỏ mỗi ngày:</h4><ul>${k.acts.map(t => `<li>${t}</li>`).join('')}</ul></div>
+    <div class="bub">${k.bubble}</div>
+  </div>
+</article>`;
+
+document.getElementById('main').innerHTML =
+  `<div class="row two">${cardHTML(cards[0])}${cardHTML(cards[1])}</div>
+   <div class="row mid">${cardHTML(cards[2])}<div class="heartwrap">${heartCenter()}</div>${cardHTML(cards[3])}</div>
+   <div class="row two">${cardHTML(cards[4])}${cardHTML(cards[5])}</div>`;
+
+document.getElementById('bgTop').innerHTML = bgTop();
+document.getElementById('bgBottom').innerHTML = bgBottom();
+document.getElementById('schoolEl').innerHTML = school();
+document.getElementById('sunEl').innerHTML = `<svg viewBox="-30 -30 60 60">${sunny(0, 0, 14)}</svg>`;
+document.getElementById('kidsEl').innerHTML = rainbow();
+
+const pledges = [
+  ['health','#e8579a','Sức khỏe','Ăn khỏe, sống khỏe'],
+  ['energy','#f08a00','Năng lượng','Tiết kiệm, an toàn'],
+  ['chem','#8b5cc7','Hóa học','Hiểu và dùng đúng'],
+  ['eco','#35a24f','Môi trường','Sống xanh, sạch'],
+  ['tech','#2f7fd6','Công nghệ','Sáng tạo, an toàn'],
+  ['future','#e5424a','Tương lai','Tò mò, dám thử']
+];
+document.getElementById('pl6').innerHTML = pledges.map(([i,c,t,s]) =>
+  `<div class="pl" style="--c:${c}">${pledgeIcons[i]}<b>${t}</b><small>${s}</small></div>`).join('');
+</script>
+</body>
+</html>
