@@ -233,7 +233,7 @@ const arch = (x, w, top, bot, fill, r = 112) =>
   `<path d="M${x} ${bot}V${top + r}A${r} ${r} 0 0 1 ${x + r} ${top}H${x + w - r}A${r} ${r} 0 0 1 ${x + w} ${top + r}V${bot}Z" fill="${fill}"/>`;
 
 document.getElementById('mhL').innerHTML = `<svg width="84" height="84" viewBox="-52 -52 104 104"><circle r="50" fill="${P.mustardL}"/>${G(0, 2, 1.05, fFlask(P.teal, P.cream))}</svg>`;
-document.getElementById('mhR').innerHTML = `<svg width="84" height="84" viewBox="-52 -52 104 104"><circle r="50" fill="${P.sageL}"/>${G(0, 0, 1.0, fAtom())}</svg>`;
+document.getElementById('mhR').innerHTML = `<svg width="84" height="84" viewBox="-52 -52 104 104"><circle r="50" fill="${P.sageL}"/>${G(0, 2, 1.05, fPlanet(P.mustard, P.terra))}</svg>`;
 
 function heroSVG() {
   const top = 8, bot = 232;
@@ -283,8 +283,8 @@ function techSVG() {
     <rect width="330" height="134" rx="12" fill="${P.skyL}"/>
     <clipPath id="${id}"><circle cx="165" cy="54" r="40"/></clipPath>
     ${cx.map(x => `<circle cx="${x}" cy="54" r="40" fill="${P.cream}"/>`).join('')}
-    ${G(56, 58, 1.0, fSeesaw())}
-    <g clip-path="url(#${id})">${G(165, 50, 1.05, fBoat())}</g>
+    ${G(56, 60, .84, fSeesaw())}
+    <g clip-path="url(#${id})">${G(165, 55, 1.0, fBoat())}</g>
     ${G(274, 58, .95, fThermos())}
     ${T(56, 119, 13, 800, INK, 'Đòn bẩy')}${T(165, 119, 13, 800, INK, 'Lực đẩy')}${T(274, 119, 13, 800, INK, 'Bình giữ nhiệt')}
   </svg>`;
